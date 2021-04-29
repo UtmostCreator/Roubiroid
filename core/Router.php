@@ -8,6 +8,7 @@ class Router
 {
     public Request $request;
     protected array $routes = [];
+    protected string $viewFolder = '/views';
 
     /**
      * Router constructor.
@@ -19,7 +20,7 @@ class Router
     }
 
 
-    public function get(string $path, callable $callback)
+    public function get(string $path, $callback)
     {
         $this->routes['get'][$path] = $callback;
     }
@@ -31,14 +32,48 @@ class Router
         $callback = $this->routes[$method][$path] ?? false;
 
         if ($callback === false) {
-            echo 'Not found'; // get Not Found controller
-            exit;
+            return 'Not found'; // get Not Found controller
         }
 
-        echo call_user_func($callback);
+        if (is_string($callback)) {
+            return $this->renderView($callback);
+        }
+
+        return call_user_func($callback);
 //        DD::dd($this->routes);
 //        DD::dd($callback);
     }
 
+    private function renderView($view)
+    {
+        $layoutContent = $this->getLayoutContent('main'); // TODO add a config class with props
+        $viewContent = $this->renderOnlyView($view); // TODO add a config class with props
+
+        $replaceContentArr = ['{{content}}', '{{ content }}'];
+
+        return str_replace($replaceContentArr, $viewContent, $layoutContent);
+    }
+
+    protected function getLayoutContent($view)
+    {
+        ob_start();
+        require_once Application::$ROOT_DIR . "{$this->viewFolder}/layouts/{$view}.php";
+        return ob_get_clean();
+    }
+
+    protected function renderOnlyView($view)
+    {
+        ob_start();
+        require_once Application::$ROOT_DIR . "{$this->viewFolder}/{$view}.php";
+        return ob_get_clean();
+    }
+
+    public function setViewFolder($path) {
+        $this->viewFolder =  rtrim($path, '/') . '/'; // TODO normalizeSlashes
+    }
+
+    public function resetViewFolder($path) {
+        $this->viewFolder = '/views/';
+    }
 
 }
