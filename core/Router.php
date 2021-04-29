@@ -7,6 +7,7 @@ use modules\DD\DD;
 class Router
 {
     public Request $request;
+    public Response $response;
     protected array $routes = [];
     protected string $viewFolder = '/views';
 
@@ -14,9 +15,10 @@ class Router
      * Router constructor.
      * @param Request $request
      */
-    public function __construct(Request $request)
+    public function __construct(Request $request, Response $response)
     {
         $this->request = $request;
+        $this->response = $response;
     }
 
 
@@ -32,6 +34,7 @@ class Router
         $callback = $this->routes[$method][$path] ?? false;
 
         if ($callback === false) {
+            Application::$app->response->setStatusCode(404);
             return 'Not found'; // get Not Found controller
         }
 
