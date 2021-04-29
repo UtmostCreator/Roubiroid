@@ -1,0 +1,16 @@
+{
+    "name": "utmostcreator/roubiroide",
+    "authors": [
+        {
+            "name": "UtmostCreator",
+            "email": "romazahrypa@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "app\\": "./",
+            "modules\\": "./modules"
+        }
+    },
+    "require": {}
+}
