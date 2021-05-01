@@ -10,10 +10,14 @@ class Router
     public Response $response;
     protected array $routes = [];
     protected string $viewFolder = '/views';
+    protected string $layoutsFolder = 'layouts';
+
+    protected string $ext = '.php';
 
     /**
      * Router constructor.
      * @param Request $request
+     * @param Response $response
      */
     public function __construct(Request $request, Response $response)
     {
@@ -26,6 +30,11 @@ class Router
     {
         $this->routes['get'][$path] = $callback;
     }
+    
+    public function post(string $path, $callback)
+    {
+        $this->routes['post'][$path] = $callback;
+    }
 
     public function resolve()
     {
@@ -35,7 +44,7 @@ class Router
 
         if ($callback === false) {
             Application::$app->response->setStatusCode(404);
-            return 'Not found'; // get Not Found controller
+            return $this->renderView('_404'); // get Not Found controller
         }
 
         if (is_string($callback)) {
@@ -49,18 +58,35 @@ class Router
 
     private function renderView($view)
     {
-        $layoutContent = $this->getLayoutContent('main'); // TODO add a config class with props
+        $layoutName = 'main'; // TODO add a config class with props
+//        DD::dd(Application::$ROOT_DIR . $this->viewFolder . '/'. $this->layoutsFolder . '/' . $layoutName . $this->ext);
+        if (!file_exists(Application::$ROOT_DIR . $this->viewFolder . '/'. $this->layoutsFolder . '/' . $layoutName . $this->ext)) {
+            echo "View file '{$layoutName}' was not found";
+            exit;
+        }
+        if (!file_exists(Application::$ROOT_DIR . $this->viewFolder . '/' . $view . $this->ext)) {
+            echo "View file '{$view}' was not found";
+            exit;
+        }
+        $layoutContent = $this->getLayoutContent($layoutName);
         $viewContent = $this->renderOnlyView($view); // TODO add a config class with props
-
         $replaceContentArr = ['{{content}}', '{{ content }}'];
 
         return str_replace($replaceContentArr, $viewContent, $layoutContent);
     }
 
+    private function renderContent($content)
+    {
+        $layoutContent = $this->getLayoutContent('main'); // TODO add a config class with props
+        $replaceContentArr = ['{{content}}', '{{ content }}'];
+
+        return str_replace($replaceContentArr, $content, $layoutContent);
+    }
+
     protected function getLayoutContent($view)
     {
         ob_start();
-        require_once Application::$ROOT_DIR . "{$this->viewFolder}/layouts/{$view}.php";
+        require_once Application::$ROOT_DIR . "{$this->viewFolder}/{$this->layoutsFolder}/{$view}.php";
         return ob_get_clean();
     }
 
