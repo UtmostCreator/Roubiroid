@@ -32,9 +32,10 @@ class Request
 //        DD::dd($this->urlParts);
         $this->hasParams = $this->urlParts['query'] ?? false;
 //        DD::dl($this->hasParams);
-        $this->method = strtolower($_SERVER['REQUEST_METHOD']) === 'get' ? 'get' : 'post';
+        $this->method = strtolower($_SERVER['REQUEST_METHOD']);
         $this->isGet = $this->method === 'get';
         $this->isPost = $this->method === 'post';
+
 //        DD::dl($this->isGet);
 //        parse_str($this->urlParts['query'], $query); // parses string into vars
 //        DD::dl($query['name']);
@@ -66,5 +67,23 @@ class Request
     public function isPost(): bool
     {
         return $this->isPost;
+    }
+
+    public function getBody()
+    {
+        $body = [];
+
+        if($this->isGet()) {
+            foreach ($_GET as $key => $value) {
+                $body[$key] = filter_input(INPUT_GET, $key, FILTER_SANITIZE_SPECIAL_CHARS);
+            }
+        }
+
+        if($this->isPost()) {
+            foreach ($_POST as $key => $value) {
+                $body[$key] = filter_input(INPUT_POST, $key, FILTER_SANITIZE_SPECIAL_CHARS);
+            }
+        }
+        return $body;
     }
 }

@@ -5,6 +5,9 @@ namespace app\controllers;
 
 
 use app\core\Application;
+use app\core\Controller;
+use app\core\Request;
+use modules\DD\DD;
 
 /**
  * Class SiteController
@@ -12,9 +15,9 @@ use app\core\Application;
  * @author Roman Zakhriapa <utmostcreator@gmail.com>
  * @package app\controllers
  */
-class SiteController
+class SiteController extends Controller
 {
-    public function handleContact()
+    public function handleContact(Request $request)
     {
         return 'handling submitted data with post';
     }
@@ -22,7 +25,7 @@ class SiteController
     public function home()
     {
         $params = ['name' => 'Some Value', 'arr' => ['terst','value']];
-        return Application::$app->router->renderView('home', $params);
+        return $this->render('home', $params);
     }
 
     public function contact()

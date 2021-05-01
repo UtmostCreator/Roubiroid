@@ -11,6 +11,7 @@ class Router
     protected array $routes = [];
     protected string $viewFolder = '/views';
     protected string $layoutsFolder = 'layouts';
+    protected string $layoutName = 'main';
 
     protected string $ext = '.php';
 
@@ -25,10 +26,11 @@ class Router
         $this->response = $response;
     }
 
-    protected function getLayoutContent($view)
+    protected function getLayoutContent()
     {
+        $layout = Application::$app->controller->layout;
         ob_start();
-        require_once Application::$ROOT_DIR . "{$this->viewFolder}/{$this->layoutsFolder}/{$view}.php";
+        require_once Application::$ROOT_DIR . "{$this->viewFolder}/{$this->layoutsFolder}/{$layout}.php";
         return ob_get_clean();
     }
 
@@ -53,28 +55,33 @@ class Router
             return $this->renderView('_404'); // get Not Found controller
         }
 
+        // this is applied to static functions
         if (is_string($callback)) {
             return $this->renderView($callback);
         }
 
-        return call_user_func($callback);
-//        DD::dd($this->routes);
-//        DD::dd($callback);
+        // creates an object to call a non-static method
+        if (is_array($callback)) {
+            Application::$app->controller = new $callback[0]();
+            $callback[0] = Application::$app->controller;
+        }
+
+        // this is applied to non-static functions
+        return call_user_func($callback, $this->request); // params to the method of a controller $this->request
     }
 
     public function renderView($view, array $params = [])
     {
-        $layoutName = 'main'; // TODO add a config class with props
-//        DD::dd(Application::$ROOT_DIR . $this->viewFolder . '/'. $this->layoutsFolder . '/' . $layoutName . $this->ext);
-        if (!file_exists(Application::$ROOT_DIR . $this->viewFolder . '/'. $this->layoutsFolder . '/' . $layoutName . $this->ext)) {
-            echo "View file '{$layoutName}' was not found";
+//        DD::dd(Application::$ROOT_DIR . $this->viewFolder . '/'. $this->layoutsFolder . '/' . $this->layoutName . $this->ext);
+        if (!file_exists(Application::$ROOT_DIR . $this->viewFolder . '/' . $this->layoutsFolder . '/' . $this->layoutName . $this->ext)) {
+            echo "View file '{$this->layoutName}' was not found";
             exit;
         }
         if (!file_exists(Application::$ROOT_DIR . $this->viewFolder . '/' . $view . $this->ext)) {
             echo "View file '{$view}' was not found";
             exit;
         }
-        $layoutContent = $this->getLayoutContent($layoutName);
+        $layoutContent = $this->getLayoutContent(); // $this->layoutName
         $viewContent = $this->renderOnlyView($view, $params); // TODO add a config class with props
         $replaceContentArr = ['{{content}}', '{{ content }}'];
 
@@ -103,12 +110,31 @@ class Router
         return ob_get_clean();
     }
 
-    public function setViewFolder($path) {
-        $this->viewFolder =  rtrim($path, '/') . '/'; // TODO normalizeSlashes
+    public function setViewFolder($path)
+    {
+        $this->viewFolder = rtrim($path, '/') . '/'; // TODO normalizeSlashes
     }
 
-    public function resetViewFolder($path) {
-        $this->viewFolder = '/views/';
+    public function resetViewFolder($path)
+    {
+        $this->viewFolder = '/views';
+    }
+
+    public function setLayout($layoutName)
+    {
+        $this->doesLayoutExist($layoutName);
+        $this->layoutName = $layoutName;
+    }
+
+    /**
+     * @param $layoutName
+     */
+    protected function doesLayoutExist($layoutName): void
+    {
+        if (!file_exists(Application::$ROOT_DIR . $this->viewFolder . '/' . $this->layoutsFolder . '/' . $layoutName . $this->ext)) {
+            echo "Layout file '$layoutName' was not found!";
+            exit;
+        }
     }
 
 }
