@@ -4,6 +4,8 @@
 namespace app\controllers;
 
 
+use app\core\Application;
+
 /**
  * Class SiteController
  *
@@ -17,9 +19,16 @@ class SiteController
         return 'handling submitted data with post';
     }
 
+    public function home()
+    {
+        $params = ['name' => 'Some Value', 'arr' => ['terst','value']];
+        return Application::$app->router->renderView('home', $params);
+    }
+
     public function contact()
     {
-        return 'contact page';
+
+        return Application::$app->router->renderView('contact');
     }
 
 }

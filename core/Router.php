@@ -25,12 +25,18 @@ class Router
         $this->response = $response;
     }
 
+    protected function getLayoutContent($view)
+    {
+        ob_start();
+        require_once Application::$ROOT_DIR . "{$this->viewFolder}/{$this->layoutsFolder}/{$view}.php";
+        return ob_get_clean();
+    }
 
     public function get(string $path, $callback)
     {
         $this->routes['get'][$path] = $callback;
     }
-    
+
     public function post(string $path, $callback)
     {
         $this->routes['post'][$path] = $callback;
@@ -56,7 +62,7 @@ class Router
 //        DD::dd($callback);
     }
 
-    private function renderView($view)
+    public function renderView($view, array $params = [])
     {
         $layoutName = 'main'; // TODO add a config class with props
 //        DD::dd(Application::$ROOT_DIR . $this->viewFolder . '/'. $this->layoutsFolder . '/' . $layoutName . $this->ext);
@@ -69,13 +75,13 @@ class Router
             exit;
         }
         $layoutContent = $this->getLayoutContent($layoutName);
-        $viewContent = $this->renderOnlyView($view); // TODO add a config class with props
+        $viewContent = $this->renderOnlyView($view, $params); // TODO add a config class with props
         $replaceContentArr = ['{{content}}', '{{ content }}'];
 
         return str_replace($replaceContentArr, $viewContent, $layoutContent);
     }
 
-    private function renderContent($content)
+    public function renderContent($content)
     {
         $layoutContent = $this->getLayoutContent('main'); // TODO add a config class with props
         $replaceContentArr = ['{{content}}', '{{ content }}'];
@@ -83,15 +89,15 @@ class Router
         return str_replace($replaceContentArr, $content, $layoutContent);
     }
 
-    protected function getLayoutContent($view)
+    public function renderOnlyView($view, array $params = [])
     {
-        ob_start();
-        require_once Application::$ROOT_DIR . "{$this->viewFolder}/{$this->layoutsFolder}/{$view}.php";
-        return ob_get_clean();
-    }
+        extract($params);
+//        foreach ($params as $key => $value) {
+//            $$key = $value;
+//        }
 
-    protected function renderOnlyView($view)
-    {
+//        DD::dd($name);
+//        DD::dd($arr);
         ob_start();
         require_once Application::$ROOT_DIR . "{$this->viewFolder}/{$view}.php";
         return ob_get_clean();

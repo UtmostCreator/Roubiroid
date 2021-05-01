@@ -1,0 +1,1 @@
+- add the default folder to the ./ (because for not the project must be ran from public/index.php)
