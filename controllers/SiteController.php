@@ -1,12 +1,13 @@
 <?php
 
-
 namespace app\controllers;
-
 
 use app\core\Application;
 use app\core\Controller;
+use app\core\notification\Message;
 use app\core\Request;
+use app\core\Response;
+use app\models\ContactForm;
 use modules\DD\DD;
 
 /**
@@ -24,14 +25,31 @@ class SiteController extends Controller
 
     public function home()
     {
-        $params = ['name' => 'Some Value', 'arr' => ['terst','value']];
+//        DD::dd(Session::getAll());
+        $params = ['name' => 'Some Value', 'arr' => ['terst', 'value']];
         return $this->render('home', $params);
     }
 
-    public function contact()
+    public function contact(Request $request, Response $response)
     {
+        $contact = new ContactForm();
+        if ($request->isPost()) {
+//            DD::dd($contact);
+//            $contact->load($request->getBody()) && $contact->validate();
+            $contact->load($request->getBody());
+//            DD::dd($contact);
+            if ($contact->validate() && $contact->send()) {
+                Application::$app->session->setFlash(Message::SUCCESS, 'Contact Us', 'Thanks for reaching us!');
+                return $response->redirect('/');
+            }
+        }
+        return $this->render('contact', ['model' => $contact]);
+    }
 
-        return Application::$app->router->renderView('contact');
+    public function clearPersistentFlashes()
+    {
+        Application::$app->session->destroyFlashesWhere(false);
+        Application::$app->response->redirect('');
     }
 
 }

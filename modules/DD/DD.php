@@ -1,6 +1,7 @@
 <?php
 
 namespace modules\DD;
+
 define('ENV', 'DEV');
 /**
  * Class DD
@@ -27,7 +28,7 @@ class DD
     public static function dd($data, $shotHTML = false, $exit = true)
     {
         if (ENV !== 'DEV') {
-            echo 'it is not allowed here!';
+            echo 'Debug is not allowed here!';
             exit;
         }
         echo DD::getStyles();
@@ -170,5 +171,17 @@ pre.colored {
         }
         $shortDumpInfo .= '</pre>';
         return $shortDumpInfo;
+    }
+
+    public static function de($data, $shotHTML = true)
+    {
+
+        echo "<pre>";
+        if ($shotHTML) {
+            echo htmlspecialchars(str_replace(';', ";\n", serialize($data)));
+        } else {
+            var_dump($data);
+        }
+        echo "</pre>";
     }
 }

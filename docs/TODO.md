@@ -1,1 +1,3 @@
-- add the default folder to the ./ (because for not the project must be ran from public/index.php)
+- check TODO make config more usable
+- Check Router for layout/file pathes...
+
