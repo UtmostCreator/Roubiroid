@@ -1,15 +1,22 @@
-<form action="" method="post">
-    <div class="mb-3">
-        <label for="subject" class="form-label">Subject</label>
-        <input type="text" class="form-control" id="subject" name="subject">
-    </div>
-    <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input type="email" class="form-control" id="email" name="email">
-    </div>
-    <div class="mb-3">
-        <label for="body" class="form-label">Subject</label>
-        <textarea name="body" id="body" cols="30" rows="10" class="form-control"></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+<?php
+
+use app\core\form\Form;
+
+/** @var \app\models\ContactForm $model */
+/** @var \app\core\View $this */
+$this->title = 'Contact us';
+
+$form = Form::begin('', 'post', ['enctype' => Form::ENCTYPE_DEFAULT, 'class' => 'custom-class']); ?>
+
+<h1>Contact Us</h1>
+
+<?= $form->input($model, 'email', [
+    'type' => 'email',
+    'required' => true,
+    'note' => 'Use your email to login',
+])->label(); ?>
+<?= $form->input($model, 'subject')->label(); ?>
+<?= $form->textarea($model, 'body', ['rows' => 8])->label(); ?>
+<button type="submit" class="btn btn-primary">Submit</button>
+
+<?= Form::end(); ?>
