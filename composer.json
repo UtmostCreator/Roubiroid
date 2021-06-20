@@ -1,16 +1,22 @@
 {
-    "name": "utmostcreator/roubiroide",
-    "authors": [
-        {
-            "name": "UtmostCreator",
-            "email": "romazahrypa@gmail.com"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "app\\": "./",
-            "modules\\": "./modules"
-        }
-    },
-    "require": {}
+  "name": "utmostcreator/roubiroide",
+  "authors": [
+    {
+      "name": "UtmostCreator",
+      "email": "utmostcreator@gmail.com"
+    }
+  ],
+  "require-dev": {
+    "squizlabs/php_codesniffer": "3.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "app\\": "./",
+      "modules\\": "./modules"
+    }
+  },
+  "require": {
+    "ext-pdo": "*",
+    "vlucas/phpdotenv": "^5.3"
+  }
 }
