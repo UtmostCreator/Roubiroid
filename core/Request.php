@@ -25,14 +25,14 @@ class Request
 
     public function __construct()
     {
-        $this->urlParts = parse_url($_SERVER['REQUEST_URI']);
-        if (strpos($this->urlParts['path'], '?')) {
+        $this->urlParts = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI']) : [];
+        if ($this->urlParts && strpos($this->urlParts['path'], '?')) {
             $this->urlParts['path'] = substr($this->urlParts['path'], 0, strpos($this->urlParts['path'], '?'));
         }
 //        DD::dd($this->urlParts);
         $this->hasParams = $this->urlParts['query'] ?? false;
 //        DD::dl($this->hasParams);
-        $this->method = strtolower($_SERVER['REQUEST_METHOD']);
+        $this->method = isset($_SERVER['REQUEST_METHOD']) ? strtolower($_SERVER['REQUEST_METHOD']) : '';
         $this->isGet = $this->method === 'get';
         $this->isPost = $this->method === 'post';
 
