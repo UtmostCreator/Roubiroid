@@ -4,14 +4,28 @@ use app\controllers\AuthController;
 use app\controllers\SiteController;
 use app\core\Application;
 use app\models\User;
+use modules\DD\DD;
 
 /* ERROR REPORTING */
 ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
+//ini_set('display_startup_errors', '1');
+ini_set('display_errors', '0');
 error_reporting(E_ALL);
 /* ERROR REPORTING */
 
 require_once __DIR__ . './../vendor/autoload.php';
+
+$logger = new \app\core\Logger();
+
+(new \app\core\ErrorHandler($logger))->register();
+//unset($_SESSION['logs']);
+//DD::dd(\app\core\Session::getAll());
+//(new User1())->test1();
+//trigger_error("Fatal error", E_USER_ERROR);
+//throw new Exception('test exc');
+//require_once __DIR__ . './../vendor/autoload1.php';
+//function test(){}
+//function test(){}
 
 // CONFIG
 /**
@@ -19,6 +33,7 @@ require_once __DIR__ . './../vendor/autoload.php';
  */
 define("SERVER_TYPE", "LOCAL");
 define("REMOTE_PROJECT_LOC", "accounts/system/");
+
 
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
@@ -44,6 +59,8 @@ $config = [
         'password' => $_ENV['DB_PASSWORD'],
     ]
 ];
+
+// ROUTES
 $app = new Application(dirname(__DIR__), $config);
 $app->router->get('/', [SiteController::class, 'home']);
 //$app->router->get('/contact', 'contact'); // render view

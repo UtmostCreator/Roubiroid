@@ -14,13 +14,14 @@ class Session
         Session::initIfItDoesNotExist();
     }
 
-    public static function set($key, $value)
+    public function set($key, $value)
     {
         $_SESSION[$key] = $value;
     }
 
     public static function getAll()
     {
+        Session::initIfItDoesNotExist();
         return $_SESSION;
     }
 
@@ -37,7 +38,7 @@ class Session
     */
 
 
-    public static function get($key)
+    public function get($key)
     {
         if (!isset($_SESSION[$key])) {
             return false;
@@ -45,12 +46,12 @@ class Session
         return $_SESSION[$key];
     }
 
-    public static function remove($key)
+    public function remove($key)
     {
         unset($_SESSION[$key]);
     }
 
-    public static function destroy()
+    public function destroy()
     {
         if (session_status() == PHP_SESSION_ACTIVE) {
             session_destroy();
@@ -64,7 +65,7 @@ class Session
         }
     }
 
-    protected static function hasAnyFlash(): bool
+    protected function hasAnyFlash(): bool
     {
         return isset($_SESSION[self::FLASH_KEY]);
     }
