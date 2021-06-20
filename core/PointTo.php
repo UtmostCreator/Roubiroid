@@ -4,10 +4,19 @@ namespace app\core;
 
 class PointTo
 {
+    public static function getBase(): string
+    {
+        return '../';
+    }
 
     public static function views($path): string
     {
-        return '../views/' . $path;
+        return static::getBase() . 'views/' . $path;
+    }
+
+    public static function to(string $folderPath, string $file)
+    {
+        return $folderPath . $file;
     }
 
 }

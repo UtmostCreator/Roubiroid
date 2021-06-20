@@ -25,16 +25,16 @@ class Application
 
     public function __construct(string $rootPath, array $config)
     {
-        self::$config = $config;
+        static::$config = $config;
         $this->userClass = $config['userClass'];
         $this->layout = $config['layout']['value'];
-        self::$ROOT_DIR = $rootPath;
+        static::$ROOT_DIR = $rootPath;
         $this->view = new View();
         $this->request = new Request();
         $this->response = new Response();
         $this->session = new Session();
         $this->router = new Router($this->request, $this->response);
-        self::$app = $this;
+        static::$app = $this;
 
         $this->db = new Database($config['db']);
 
@@ -50,6 +50,13 @@ class Application
         return isset(Application::$app->controller) ? Application::$app->controller->layout : Application::$app->layout;
     }
 
+    public static function app(): Application
+    {
+        if (static::$app) {
+            return static::$app;
+        }
+    }
+
     public function run()
     {
         try {
@@ -63,7 +70,7 @@ class Application
                 ]
             );
         }
-    }   
+    }
 
     public function login(UserModel $user): bool
     {
@@ -82,6 +89,11 @@ class Application
 
     public static function isGuest(): bool
     {
-        return !self::$app->user;
+        return !static::$app->user;
+    }
+
+    public function basePath($path = ''): string
+    {
+        return realpath(PointTo::getBase() . $path);
     }
 }

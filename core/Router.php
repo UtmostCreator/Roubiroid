@@ -4,13 +4,14 @@ namespace app\core;
 
 use app\core\exceptions\NotFoundException;
 use app\core\middlewares\BaseMiddleware;
+use Illuminate\Support\Facades\Route;
 use modules\DD\DD;
 
 class Router
 {
     public Request $request;
     public Response $response;
-    protected array $routes = [];
+    protected static array $routes = [];
 
     /**
      * Router constructor.
@@ -23,21 +24,21 @@ class Router
         $this->response = $response;
     }
 
-    public function get(string $path, $callback)
+    public static function get(string $path, $callback)
     {
-        $this->routes['get'][$path] = $callback;
+        static::$routes['get'][$path] = $callback;
     }
 
-    public function post(string $path, $callback)
+    public static function post(string $path, $callback)
     {
-        $this->routes['post'][$path] = $callback;
+        static::$routes['post'][$path] = $callback;
     }
 
     public function resolve()
     {
         $path = $this->request->getPath();
         $method = $this->request->getMethod();
-        $callback = $this->routes[$method][$path] ?? false;
+        $callback = static::$routes[$method][$path] ?? false;
 
         if ($callback === false) {
             throw new NotFoundException();
@@ -69,4 +70,26 @@ class Router
         // e.g. public function login(Request $request, Response $response)
         return call_user_func($callback, $this->request, $this->response);
     }
+
+    /**
+     * Define your route model bindings, pattern filters, etc.
+     *
+     * @return void
+     */
+//    public function boot()
+//    {
+//        $this->configureRateLimiting();
+//
+//        $this->routes(function () {
+//            Route::prefix('api')
+//                ->middleware('api')
+//                ->namespace($this->namespace)
+//                ->group(base_path('routes/api.php'));
+//
+//            Route::middleware('web')
+//                ->namespace($this->namespace)
+//                ->group(base_path('routes/web.php'));
+//        });
+//    }
+
 }

@@ -47,7 +47,9 @@ class Database
 
         $appliedMigrations = $this->getAppliedMigrations();
 
-        $files = FileHelper::getAllFilesAndFolderIn(FileHelper::mergePath([Application::$ROOT_DIR, Application::$CONFIG['migrations']['folder']]));
+        $files = FileHelper::getAllFilesAndFolderIn(FileHelper::mergePath(
+            [Application::$ROOT_DIR, Application::$config['migrations']['folder']]
+        ));
 
         $toApplyMigrations = array_diff($files, $appliedMigrations);
 
