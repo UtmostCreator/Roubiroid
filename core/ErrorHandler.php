@@ -2,8 +2,6 @@
 
 namespace app\core;
 
-use modules\DD\DD;
-
 class ErrorHandler
 {
     protected const SIMPLE = 'simple';
@@ -78,7 +76,7 @@ class ErrorHandler
         return true;
     }
 
-    private function addError(int $errno, string $errstr, string $errfile, int $errline, int $httpStatusCode = 500)
+    protected function addError(int $errno, string $errstr, string $errfile, int $errline, int $httpStatusCode = 500)
     {
         $httpStatusMsg = 'Web server is down';
         $phpSapiName = substr(php_sapi_name(), 0, 3);
@@ -128,9 +126,9 @@ class ErrorHandler
                 case E_CORE_WARNING:
                 case E_COMPILE_WARNING:
                 case E_PARSE:
-                if (ob_get_length()) {
-                    ob_end_clean();
-                }
+                    if (ob_get_length()) {
+                        ob_end_clean();
+                    }
                     $this->errors[] = $this->addError($lasterror['type'], '[SHUTDOWN]' . $this->getHumanReadableTrace($lasterror['message']), $lasterror['file'], $lasterror['line']);
 //                $this->logger->commit($lasterror, "fatal");
             }
@@ -187,7 +185,7 @@ class ErrorHandler
      * @param $errno
      * @param array $loggedError
      */
-    private function writeHistoryLog($errno, array $loggedError): void
+    protected function writeHistoryLog($errno, array $loggedError): void
     {
         switch ($errno) {
             case E_ERROR:
@@ -225,7 +223,7 @@ class ErrorHandler
         return sprintf("%s<hr> <br><br>", $this->errorMessage);
     }
 
-    protected function getHumanReadableTrace(string $trace = null)
+    protected function getHumanReadableTrace(string $trace = null): string
     {
         if (empty($trace)) {
             $trace = print_r(debug_backtrace(false), true);
@@ -238,10 +236,10 @@ class ErrorHandler
         return $trace;
     }
 
-    private function displayErrors()
+    protected function displayErrors(): void
     {
         if (empty($this->errors)) {
-            return false;
+            return;
         }
 
         foreach ($this->errors as $key => $error) {
