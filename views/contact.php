@@ -5,10 +5,12 @@ use app\core\form\Form;
 /** @var \app\models\ContactForm $model */
 /** @var \app\core\View $this */
 $this->title = 'Contact us';
-
+//dd(auth()->user());
 $form = Form::begin('', 'post', ['enctype' => Form::ENCTYPE_DEFAULT, 'class' => 'custom-class']); ?>
 
 <h1>Contact Us</h1>
+
+<p><?= auth()->user()->is_admin ?></p>
 
 <?= $form->input($model, 'email', [
     'type' => 'email',

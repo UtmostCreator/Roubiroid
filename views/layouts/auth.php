@@ -17,7 +17,7 @@ use app\core\PointTo;
           integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
 
-    <title>Hello, world!</title>
+    <title>Auth Layout</title>
 </head>
 <body>
 <div class="container">

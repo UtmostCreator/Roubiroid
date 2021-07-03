@@ -33,10 +33,6 @@ $displayedMessage = $exception->getCode() . ' — ' . $exception->getMessage();
         }
 
         body {
-            display: flex;
-            align-items: center;
-            padding-top: 40px;
-            padding-bottom: 40px;
             background-color: #f5f5f5;
             box-sizing: border-box;
             font-size: 1.6rem;
@@ -47,6 +43,12 @@ $displayedMessage = $exception->getCode() . ' — ' . $exception->getMessage();
         }
 
         .error {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-flow: column wrap;
+            text-align: center;
             font-family: 'Montserrat';
         }
 
@@ -55,11 +57,14 @@ $displayedMessage = $exception->getCode() . ' — ' . $exception->getMessage();
             border-bottom: 2rem solid #a73beb;
             width: min-content;
             margin: 0 auto;
+            margin-bottom: 40px;
             /*text-decoration: underline;*/
         }
 
         .error__description {
-            font-size: 2rem;
+            font-size: 4rem;
+            max-width: 90%;
+            margin: 0 auto;
         }
 
         .block {
@@ -86,14 +91,16 @@ $displayedMessage = $exception->getCode() . ' — ' . $exception->getMessage();
         }
     </style>
 </head>
-<body class="text-center">
+<body>
 
 <main class="error error-<?= $exception->getCode() ?>">
     <div class="block">
         <div>
 
-            <h1 class="h3 mb-3 fw-normal error__code"><?= $exception->getCode() ?></h1>
+            <h1 class="h3 mb-3 fw-normal error__code"><?= $exception->getCode() === 0 ? "Error" : $exception->getCode();  ?></h1>
             <p class="error__description"><?= $exception->getMessage() ?></p>
+<!--            <p class="error__description">--><?//= $exception->getFile() ?><!--</p>-->
+<!--            <p class="error__description">--><?//= $exception->getLine() ?><!--</p>-->
 
         </div>
         <?php if ($exception->getCode() === 403) : ?>

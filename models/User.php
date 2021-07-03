@@ -5,11 +5,16 @@ namespace app\models;
 use app\core\db\DbModel;
 use app\core\db\Query;
 use app\core\Model;
+use app\core\permission_roubiroid\HasRoles;
 use app\core\UserModel;
 use modules\DD\DD;
 
 class User extends UserModel
 {
+    use HasRoles;
+
+    protected $guard_name = 'web';
+
     public const INACTIVE_STATUS = 0;
     public const ACTIVE_STATUS = 1;
     public const DELETED_STATUS = 2;
@@ -114,5 +119,10 @@ class User extends UserModel
     public function getUserRole()
     {
         return 1;
+    }
+
+    public function getIsAdminAttribute(): string
+    {
+        return 'You are an admin user!';
     }
 }

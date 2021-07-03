@@ -21,9 +21,8 @@ class AuthController extends Controller
     public function __construct()
     {
 //        $this->registerMiddleware(new AuthMiddleware(['array', 'of', 'actions']));
-        DD::dd(Application::$app->router);
 //        $this->registerMiddleware(new AuthMiddleware([User::ROLE_ADMIN => ['profile', 'test']]));
-        $this->registerMiddleware(new AuthMiddleware(['profile']));
+//        $this->registerMiddleware(new AuthMiddleware(['profile'])); // old way
         parent::__construct();
     }
 

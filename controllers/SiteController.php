@@ -33,6 +33,7 @@ class SiteController extends Controller
     public function contact(Request $request, Response $response)
     {
         $contact = new ContactForm();
+//        dd();
         if ($request->isPost()) {
 //            DD::dd($contact);
 //            $contact->load($request->getBody()) && $contact->validate();
