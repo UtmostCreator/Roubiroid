@@ -22,6 +22,7 @@ class Query
     public const RESPONSE_GET_AFFECTED_ROWS = 'affected_rows';
     public const RESPONSE_DEFAULT_MODE = self::RESPONSE_GET_LAST_ID;
     public const MAX_QUERY_LIMIT = 1000;
+    public const EXCEPT_COLUMNS_ARR = ['id'];
 
     public static $RESPONSE_MODE = self::RESPONSE_DEFAULT_MODE;
     public static $MODE = PDO::FETCH_OBJ;
@@ -50,12 +51,23 @@ class Query
     protected array $valuesArray;
     protected array $attribsArray;
 
+    protected static ?Query $inst = null;
+
     public function __construct()
     {
         $this->clearQueryParams();
         $this->db = Application::$app->db;
         $this->pdo = $this->db->pdo;
         $this->stmt = new PDOStatement();
+    }
+
+    public static function getInst(): Query
+    {
+        if (empty(self::$inst)) {
+            return new static();
+        }
+
+        return self::$inst;
     }
 
     // BATCH insert EXAMPLE
@@ -76,6 +88,9 @@ class Query
         if (empty($attrArr) || empty($insertValues)) {
             return false;
         }
+        // reset keys e.g. 2 => 'value' to start the array from 0
+        $insertValues = array_values($insertValues);
+        $attrArr = array_values($attrArr);
 
         $this->assignKeyValuesArr($attrArr, $insertValues);
         if (ArrayHelper::isAssoc($this->keyValueArray)) {
@@ -107,9 +122,13 @@ class Query
     public function questionMarkInsert(string $tableName): void
     {
         $oneRecordValues = '(' . $this->placeholders('?', sizeof($this->attribsArray)) . ')';
+        // TODO not sure if it is the right way
+        $multiInsert = $this->isMulti();
+        $n = $multiInsert ? count($this->valuesArray) : 1;
+//        dd($multiInsert);
         $arrayOfNValues = array_fill(
             0,
-            count($this->keyValueArray),
+            $n,
             $oneRecordValues
         );
         $questionMarksStr = implode(',', $arrayOfNValues);
@@ -185,25 +204,31 @@ class Query
             throw new \PDOException('attrArr is empty!');
         }
 
-        $values = empty($values) ? $this->keyValueArray : [];
+//        $this->debugWhere("INSERT");
+        $this->valuesArray = empty($values) ? $this->valuesArray : $values;
+        if (ArrayHelper::isAssoc($values)) {
+            $this->keyValueArray = $values;
+        }
 
+//        $this->debugWhere('INSERT');
+//        $this->debugWhere('INSERT INTO migrations');
         try {
             $this->stmt = $this->pdo->prepare($this->query);
-
-            if (ArrayHelper::isAssoc($values)) {
+            if (ArrayHelper::isAssoc($this->keyValueArray)) {
                 foreach ($this->attribsArray as $attr) {
-                    $this->stmt->bindValue(":$attr", $values[$attr]);
+                    $this->stmt->bindValue(":$attr", $this->keyValueArray[$attr]);
                 }
             }
 
-            if (!$this->stmt->execute($values)) {
-                throw new \PDOException('Statement can not be executed!');
+            if (empty($this->valuesArray)) {
+                return $this->stmt->execute();
+            } elseif ($this->stmt->execute($this->valuesArray)) {
+                return true;
             }
-            return true;
+            throw new \PDOException('Statement can not be executed!');
         } catch (\PDOException $exception) {
-            DD::dl($this->getQuery());
-            echo "error \r\n" . PHP_EOL;
-            exit($exception->getMessage());
+            echo $this->query;
+            throw new \InvalidArgumentException($exception->getMessage() . '; Query is not executed');
         }
     }
 
@@ -216,6 +241,7 @@ class Query
      */
     public function prepareInsertString(string $tableName, string $fields, string $questionMarks): string
     {
+        // VALUES %s is used for batch insert as (%s) will allow only 1
         return sprintf("INSERT INTO %s (%s) VALUES %s", $tableName, $fields, $questionMarks);
     }
 
@@ -243,13 +269,20 @@ class Query
         return $this;
     }
 
-
     public function from($tables): self
     {
         $this->from = ' FROM ' . $this->separateWithCommas($tables);
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function joinWhere(array $attribs): string
+    {
+        $whereAttribsArr = array_map(fn($attr) => "$attr = :$attr", $attribs);
+        return implode(' AND ', $whereAttribsArr);
+    }
 
     public function where($where): self
     {
@@ -261,14 +294,33 @@ class Query
         return $this;
     }
 
-
-    public function andWhere($where): self
+    protected function nWhere($joinWord, $where): void
     {
         $this->mergeKeyValueArr($where);
         $condition = $this->joinWhere(array_keys($where));
 
-        $this->where .= ' AND ' . $condition;
-//        DD::dd($this->where);
+        $this->where .= sprintf("$joinWord %s ", $condition);
+    }
+
+    protected function whereWithQuestionMarks(array $where, string $join = 'AND')
+    {
+        $this->mergeKeyValueArr($where);
+        $condition = $this->getQuestionMarkQuery($where, true, $join);
+
+        $this->where .= sprintf("WHERE %s ", $condition);
+    }
+
+    public function andWhere($where): self
+    {
+        $this->nWhere('AND', $where);
+
+        return $this;
+    }
+
+    public function orWhere($where): self
+    {
+        $this->nWhere('OR', $where);
+
         return $this;
     }
 
@@ -284,12 +336,16 @@ class Query
         return $values;
     }
 
-    /** @description removes or escapes array of symbols [*, _, ...] */
-    public static function handleWildcards($arr)
+    /** @description removes or escapes array of symbols [*, _, ...]
+     * @param array $arr
+     * @return array
+     */
+    public static function handleWildcards(array $arr): array
     {
         if (empty($arr)) {
-            return false;
+            return [];
         }
+
         if (self::$removeWildcards) {
             foreach ($arr as $key => $value) {
                 $arr[$key] = StringHelper::removeWildCards($value);
@@ -304,7 +360,6 @@ class Query
 
     public function one()
     {
-
         $this->limit = ' LIMIT 1';
 //        DD::dd($this->getQuery());
         $this->executeQuery();
@@ -348,13 +403,41 @@ class Query
             $this->limit;
     }
 
-    /**
-     * @return string
-     */
-    public function joinWhere(array $attribs): string
+    public function truncate(string $tableName): bool
     {
-        $whereAttribsArr = array_map(fn($attr) => "$attr = :$attr", $attribs);
-        return implode(' AND ', $whereAttribsArr);
+        $defConn = Application::$config['default'];
+        $sql = sprintf("TRUNCATE `%s`.`%s`;", Application::$config['connections'][$defConn]['database'], $tableName);
+        $this->stmt = $this->pdo->prepare($sql);
+        return $this->stmt->execute();
+    }
+
+    public function dropTable($tableName)
+    {
+        // DROP TABLE IF EXISTS `rz_framework`.`migrations`
+        $sql = $this->dbTable("DROP TABLE IF EXISTS", $tableName);
+//        $sql = "SET FOREIGN_KEY_CHECKS = 0; $sql SET FOREIGN_KEY_CHECKS = 1;";
+        $this->stmt = $this->pdo->prepare($sql);
+        return $this->stmt->execute();
+    }
+
+    public function dropTables(array $tables): bool
+    {
+        try {
+            if (sizeof($tables) <= 0) {
+                throw new \InvalidArgumentException('EXCEPTION: Empty array of tables is supplied!');
+            }
+        } catch (\Exception $exception) {
+            exit($exception->getMessage());
+        }
+        $sql = '';
+//        foreach ($tables as $tableName) {
+//            $sql .= $this->dbTable("DROP TABLE IF EXISTS", $tableName);
+//        }
+        foreach ($tables as $tableName) {
+            $sql .= $this->dbTable('DROP TABLE IF EXISTS ', $tableName);
+        }
+//        dd($sql);
+        return $this->pdo->exec($sql) !== false;
     }
 
     /**
@@ -372,6 +455,18 @@ class Query
         $this->stmt = null;
         return $this->response;
     }
+
+    /**
+     * @param string|array $limitParam
+     * @return $this
+     */
+    public function limit($limitParam): self
+    {
+        $this->limit = ' LIMIT ' . $this->prepareLimit($limitParam);
+        return $this;
+    }
+
+    /* HELPER METHODS DOWN BELOW */
 
     public function clearQueryParams()
     {
@@ -396,26 +491,16 @@ class Query
     }
 
     /**
-     * @param $limitParam
+     * @param array|string $limitParam
      * @return array|string
      */
-    private function prepareNumberParams($limitParam)
+    private function prepareLimit($limitParam)
     {
         if (is_array($limitParam)) {
             return implode(',', $limitParam);
         } else {
-            return explode(', ', $limitParam);
+            return $limitParam;
         }
-    }
-
-    /**
-     * @param string|array $limitParam
-     * @return $this
-     */
-    public function limit($limitParam): self
-    {
-        $this->limit = ' LIMIT ' . $this->prepareNumberParams($limitParam);
-        return $this;
     }
 
     public function setAttributes($arr)
@@ -425,11 +510,18 @@ class Query
 
     private function assignKeyValuesArr($mixed, $values = []): void
     {
+        // for where
         if (empty($values)) {
-            $this->keyValueArray = $mixed;
-            $this->attribsArray = array_keys($mixed);
-            $this->valuesArray = array_values($mixed);
+            $this->setArrays($mixed);
         } else {
+            // TODO to remove
+//            if (sizeof($mixed) !== sizeof($values)) {
+//                $keys = array_fill(0, sizeof($values), $mixed[0]);
+//                $this->keyValueArray = array_combine($keys, $values);
+//            } else {
+//                dd(1);
+//                $this->keyValueArray = array_combine($mixed, $values);
+//            }
             $this->attribsArray = $mixed;
             $this->valuesArray = $values;
         }
@@ -440,5 +532,107 @@ class Query
         $this->keyValueArray = array_merge($this->keyValueArray, $keyValueArr);
         $this->attribsArray = array_merge($this->attribsArray, array_keys($keyValueArr));
         $this->valuesArray = array_merge($this->valuesArray, array_values($keyValueArr));
+    }
+
+    private function debugWhere(string $string)
+    {
+        if (strpos($this->query, $string) !== false) {
+            DD::dl($this->query);
+            echo 'values Arr';
+            DD::dl($this->valuesArray);
+            echo 'Attribs Arr';
+            DD::dl($this->attribsArray);
+            DD::dl($this->keyValueArray);
+            DD::dd('exit');
+        }
+    }
+
+    /**
+     * @param string $table DB table_name
+     * @param array $data data to insert to $table
+     * @param string $where condition to update
+     */
+    public function update(string $table, array $data, array $where)
+    {
+//        ksort($data);
+        $this->setArrays($data);
+        $fields = $this->getQuestionMarkQuery($this->attribsArray, false);
+        $this->whereWithQuestionMarks($where);
+        $this->limit(1);
+
+        $this->query = "UPDATE $table SET $fields " . $this->where . $this->limit;
+//        dd($this->query);
+//        dd($this->keyValueArray);
+        $this->executeQuery();
+        return $this->stmt->rowCount();
+    }
+
+
+    /**
+     * @return int affected rows count
+     */
+    public function delete(string $table, int $id, int $limit = 1): int
+    {
+        return $this->deleteWhere($table, 'id', $id, $limit);
+    }
+
+    /**
+     * @return int affected rows count
+     */
+    public function deleteWhere(string $table, string $fieldName, string $value, int $limit = 100): int
+    {
+        $this->stmt = null;
+        $this->query = "DELETE FROM $table WHERE $fieldName = $value LIMIT $limit";
+        $this->executeQuery();
+
+        return $this->stmt->rowCount();
+    }
+
+    /**
+     * @return int affected rows count
+     */
+    public function deleteWhereIn(string $table, string $fieldName, array $values, $limit = 100): int
+    {
+        $this->stmt = null;
+        $in = $this->placeholders('?', sizeof($values));
+        $this->query = "DELETE FROM $table WHERE $fieldName IN($in) LIMIT $limit";
+        $this->attribsArray[] = $fieldName;
+        $this->valuesArray = $values;
+        $this->executeQuery();
+
+        return $this->stmt->rowCount();
+    }
+
+    private function dbTable(string $command, string $tableName): string
+    {
+        $defConn = Application::$config['default'];
+        return sprintf(
+            "%s `%s`.`%s`;",
+            $command,
+            Application::$config['connections'][$defConn]['database'],
+            $tableName
+        );
+    }
+
+    private function setArrays($mixed)
+    {
+        $this->keyValueArray = $mixed;
+        $this->attribsArray = array_keys($mixed);
+        $this->valuesArray = array_values($mixed);
+    }
+
+    protected function getQuestionMarkQuery(array $arr, $useKey = true, $join = ', ')
+    {
+        $fields = '';
+        $join = strpos($join, ',') && strlen($join) <= 2 ? $join : " $join ";
+        foreach ($arr as $key => $value) {
+            $fields .= $useKey ? "$key=?$join" : "$value=?$join";
+        }
+        return substr($fields, 0, -(strlen($join)));
+    }
+
+    protected function isMulti(): bool
+    {
+        return count($this->valuesArray) / count($this->attribsArray) > 1;
     }
 }

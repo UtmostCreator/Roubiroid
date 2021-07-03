@@ -49,7 +49,7 @@ abstract class DbModel extends Model
             Query::$CLASS = static::class;
         }
 
-        if (is_string($where)) {
+        if (is_string($where) || is_int($where)) {
             $where = ['id' => (int)$where];
         }
 
