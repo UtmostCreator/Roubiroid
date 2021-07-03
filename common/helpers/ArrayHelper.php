@@ -4,6 +4,15 @@ namespace app\common\helpers;
 
 use modules\DD\DD;
 
+function _matcher($m, $str)
+{
+    if (preg_match('/^hello (\w+)/i', $str, $matches)) {
+        $m[] = $matches[1];
+    }
+
+    return $m;
+}
+
 class ArrayHelper
 {
 
@@ -28,5 +37,13 @@ class ArrayHelper
         }
 
         return array_keys($arr) !== range(0, count($arr) - 1);
+    }
+
+    public function removeValue(array $arr, $value): array
+    {
+        if (($key = array_search($value, $arr)) !== false) {
+            unset($arr[$key]);
+        }
+        return $arr;
     }
 }

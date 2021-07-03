@@ -20,4 +20,12 @@ class StringHelper
     {
         return str_replace(array('\\', '%', '_'), array('\\\\', '\\%', '\\_'), $value);
     }
+
+    public static function extractString(string $inValue, string $findVal, bool $before = true)
+    {
+        if (!$before) {
+            return substr($inValue, strpos($inValue, $findVal) + 1);
+        }
+        return substr($inValue, 0, strpos($inValue, $findVal));
+    }
 }
