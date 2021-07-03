@@ -9,7 +9,7 @@ class Controller
     public View $view;
     public string $action = '';
     /**
-     * @var app\core\middlewares\BaseMiddleware
+     * @var BaseMiddleware
      */
     protected array $middlewares = [];
     public string $layout = 'main';

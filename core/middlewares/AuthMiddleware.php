@@ -13,17 +13,24 @@ class AuthMiddleware extends BaseMiddleware
      * AuthMiddleware constructor.
      * @param string[] $actions
      */
-    public function __construct(array $actions = [])
-    {
-        $this->actions = $actions;
-    }
+//    public function __construct(array $actions = [])
+//    {
+//        $this->actions = $actions;
+//    }
+//
+//    public function execute()
+//    {
+//        if (Application::isGuest()) {
+//            if (empty($this->actions) || in_array(Application::$app->controller->action, $this->actions)) {
+//                throw new ForbiddenException();
+//            }
+//        }
+//    }
 
     public function execute()
     {
-        if (Application::isGuest()) {
-            if (empty($this->actions) || in_array(Application::$app->controller->action, $this->actions)) {
-                throw new ForbiddenException();
-            }
+        if (empty(app()->user)) {
+            throw new ForbiddenException();
         }
     }
 }

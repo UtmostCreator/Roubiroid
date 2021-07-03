@@ -14,7 +14,7 @@ class PointTo
         return static::getBase() . 'views/' . $path;
     }
 
-    public static function to(string $folderPath, string $file)
+    public static function to(string $folderPath, string $file): string
     {
         return $folderPath . $file;
     }

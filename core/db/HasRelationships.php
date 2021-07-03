@@ -2,6 +2,7 @@
 
 namespace app\core\db;
 
+// TODO remove file
 trait HasRelationships
 {
     /**

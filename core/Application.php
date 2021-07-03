@@ -2,14 +2,15 @@
 
 namespace app\core;
 
+use app\core\authentication\AuthManager;
+use app\core\authentication\InterfaceAuthBase;
 use app\core\db\Database;
 
 class Application
 {
     public static Application $app;
     public static string $ROOT_DIR;
-    public string $layout = 'main';
-    public static $config = null;
+    public static ?array $config = null;
 
     // TODO replace this config with index.php
     public string $userClass;
@@ -26,8 +27,8 @@ class Application
     public function __construct(string $rootPath, array $config)
     {
         static::$config = $config;
-        $this->userClass = $config['userClass'];
-        $this->layout = $config['layout']['value'];
+        $this->userClass = $config['userClass'] ?? '';
+        $this->layout = $config['layout']['value'] ?? '';
         static::$ROOT_DIR = $rootPath;
         $this->view = new View();
         $this->request = new Request();
@@ -36,7 +37,10 @@ class Application
         $this->router = new Router($this->request, $this->response);
         static::$app = $this;
 
-        $this->db = new Database($config['db']);
+        $defConnection = $config['default'];
+        $dbConfig = $config['connections'][$defConnection];
+
+        $this->db = new Database($dbConfig);
 
         $primaryValue = $this->session->get('user');
         if ($primaryValue) {
@@ -45,15 +49,15 @@ class Application
         }
     }
 
-    public static function getLayout(): string
-    {
-        return isset(Application::$app->controller) ? Application::$app->controller->layout : Application::$app->layout;
-    }
-
     public static function app(): Application
     {
-        if (static::$app) {
-            return static::$app;
+        try {
+            if (static::$app) {
+                return static::$app;
+            }
+            throw new \Exception("Application is not yet defined!");
+        } catch (\Exception $exception) {
+            exit($exception->getMessage());
         }
     }
 
@@ -62,14 +66,22 @@ class Application
         try {
             echo $this->router->resolve();
         } catch (\Exception $e) {
-            Application::$app->response->setStatusCode($e->getCode());
-            echo $this->view->renderView(
+            $statusCode = is_int($e->getCode()) ? $e->getCode() : 500;
+            Application::$app->response->setStatusCode($statusCode);
+//            dd($e);
+            echo $this->view->renderOnlyView(
                 '_error',
                 [
                     'exception' => $e
                 ]
             );
         }
+    }
+
+    // TODO check if can be improved
+    public static function getLayout(): string
+    {
+        return isset(Application::$app->controller) ? Application::$app->controller->layout : Application::$app->layout;
     }
 
     public function login(UserModel $user): bool
@@ -82,14 +94,19 @@ class Application
         return true;
     }
 
-    public function logout()
+    public function auth(): InterfaceAuthBase
     {
-        $this->session->remove('user');
+        return AuthManager::getInstance();
     }
 
     public static function isGuest(): bool
     {
         return !static::$app->user;
+    }
+
+    public static function isAuth(): bool
+    {
+        return !empty(static::$app->user);
     }
 
     public function basePath($path = ''): string

@@ -2,15 +2,14 @@
 
 namespace app\core;
 
+use app\common\helpers\ArrayHelper;
 use app\common\helpers\StringHelper;
-use app\core\Application;
 use app\core\db\Query;
-use modules\DD\DD;
 
 abstract class Model
 {
     public array $errors = [];
-    public bool $allowSingleErrorMessage = false;
+    public const ALLOW_SINGLE_ERROR_MESSAGE = false;
     public const RULE_REQUIRED = 'required';
 
     public const RULES_MIN = 'min';
@@ -20,9 +19,40 @@ abstract class Model
     public const RULE_MATCH = 'match';
     public const RULE_EMAIL = 'email';
     public const RULE_UNIQUE = 'unique';
+    public const RULE_UNIQUE_TOO_SHORT = 'unique_too_short';
     public const MIN_VALUE_TO_CHECK_UNIQUENESS = 3;
 
     abstract public function rules(): array;
+    abstract public static function tableName(): string;
+
+    public function __construct()
+    {
+        // any action here
+
+        // must be at the end!
+        $this->booted();
+    }
+
+    public function __get($name)
+    {
+        try {
+            if (property_exists($this, $name)) {
+                return $this->{$name};
+            }
+
+            $arr = explode('_', $name);
+            $arr = array_map(fn($el) => ucfirst($el), $arr);
+            $name = implode('', $arr);
+            $methodName = "get{$name}Attribute";
+            //        dd($methodName);
+            if (method_exists($this, $methodName)) {
+                return $this->{$methodName}();
+            }
+            throw new \InvalidArgumentException("There is no such field name like \"{$name}\"");
+        } catch (\Exception $exception) {
+            exit($exception->getMessage());
+        }
+    }
 
     public function load($data = [])
     {
@@ -33,6 +63,11 @@ abstract class Model
         }
     }
 
+    protected function booted()
+    {
+        // it is created and ready for any other secondary tasks.
+    }
+
     public function validate(): bool
     {
         foreach ($this->rules() as $attr => $rules) {
@@ -41,12 +76,12 @@ abstract class Model
                 $ruleName = $rule; // e.g. self::RULE_REQUIRED, self::RULE_EMAIL
                 if (!is_string($ruleName)) {
                     /** e.g.
-                    [self::RULE_UNIQUE, 'class' => self::class] */
+                     * [self::RULE_UNIQUE, 'class' => self::class] */
                     $ruleName = $rule[0];
                 }
 
                 // exit if singleError = true and there is an error for this field
-                if (!empty($this->errors) && $this->allowSingleErrorMessage) {
+                if (!empty($this->errors) && self::ALLOW_SINGLE_ERROR_MESSAGE) {
                     continue;
                 }
 
@@ -91,6 +126,10 @@ abstract class Model
                         break;
                     case self::RULE_UNIQUE:
                         if (strlen($value) <= self::MIN_VALUE_TO_CHECK_UNIQUENESS) {
+                            $this->addErrorForRule($attr, self::RULE_UNIQUE_TOO_SHORT, [
+                                'field' => $this->getLabel($attr),
+                                'n' => self::MIN_VALUE_TO_CHECK_UNIQUENESS
+                            ]);
                             continue 2;
                         }
                         $className = $rule['class'];
@@ -142,6 +181,7 @@ abstract class Model
             self::RULE_MAX => 'This field must contain at most {max} chars',
             self::RULE_MATCH => 'This field  must be same as {match}',
             self::RULE_UNIQUE => 'Record with this {field} already exists',
+            self::RULE_UNIQUE_TOO_SHORT => 'The {field} must have at least {n} chars',
         ];
     }
 
@@ -176,5 +216,29 @@ abstract class Model
     public function getLabel($attribute): string
     {
         return $this->labels()[$attribute] ?? StringHelper::uppercaseWordsAndReplaceSpecifier('_', $attribute);
+    }
+
+    public static function create(array $mixedKeyValArr, array $valuesArr = [])
+    {
+        if (ArrayHelper::isAssoc($mixedKeyValArr)) {
+            Query::getInst()->insert(static::tableName(), array_keys($mixedKeyValArr), array_values($mixedKeyValArr));
+        } elseif (!empty($valuesArr)) {
+            Query::getInst()->insert(static::tableName(), $mixedKeyValArr, $valuesArr);
+        }
+    }
+
+    public static function delete(int $id)
+    {
+        Query::getInst()->delete(static::tableName(), $id);
+    }
+
+    public static function deleteWhereIn($field, array $arr): int
+    {
+        return Query::getInst()->deleteWhereIn(static::tableName(), $field, $arr);
+    }
+
+    public static function update($data, $where): int
+    {
+        return Query::getInst()->update(static::tableName(), $data, $where);
     }
 }
