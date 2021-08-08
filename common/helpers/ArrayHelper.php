@@ -39,6 +39,44 @@ class ArrayHelper
         return array_keys($arr) !== range(0, count($arr) - 1);
     }
 
+    /**
+     * @param string $haystack
+     * @param array $needle
+     * @param int $offset
+     * @return bool|int
+     */
+    public static function arrGetEncounteredItemPos($haystack, $needle, $offset = 0): int
+    {
+        if (!is_array($needle)) {
+            $needle = array($needle);
+        }
+        foreach ($needle as $key => $query) {
+            if ($pos = strpos($haystack, $query, $offset) !== false) {
+                return $key; // stops at the first true result
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * @param string $haystack
+     * @param array $needle
+     * @param int $offset
+     * @return bool
+     */
+    public static function strposa($haystack, $needle, $offset = 0): bool
+    {
+        if (!is_array($needle)) {
+            $needle = array($needle);
+        }
+        foreach ($needle as $query) {
+            if (strpos($haystack, $query, $offset) !== false) {
+                return true; // stop on first true result
+            }
+        }
+        return false;
+    }
+
     public function removeValue(array $arr, $value): array
     {
         if (($key = array_search($value, $arr)) !== false) {
