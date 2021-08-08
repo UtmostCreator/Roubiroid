@@ -43,4 +43,9 @@ class LoginForm extends Model
             'password' => 'Password'
         ];
     }
+
+    public static function tableName(): string
+    {
+        // TODO: Implement tableName() method.
+    }
 }

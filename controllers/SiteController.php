@@ -33,6 +33,7 @@ class SiteController extends Controller
     public function contact(Request $request, Response $response)
     {
         $contact = new ContactForm();
+        $contact->scenario = ContactForm::SCENARIO_EMAIL;
 //        dd();
         if ($request->isPost()) {
 //            DD::dd($contact);

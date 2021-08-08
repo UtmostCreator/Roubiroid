@@ -1,0 +1,7 @@
+.notification-area {
+    margin-block: 1rem;
+}
+
+.notification-area p.notification-text-padding {
+    margin: 0 0;
+}

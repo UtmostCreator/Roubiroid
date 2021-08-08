@@ -19,15 +19,16 @@ error_reporting(E_ALL);
 require_once __DIR__ . './../vendor/autoload.php';
 //DD::dd(realpath(\app\core\PointTo::to('../common/config/', 'config.php')));
 $config = require_once '../common/config/config.php';
-
+//DD::dd($config);
 // System logger
-$logger = new \app\core\Logger();
+$logger = \app\core\Logger::getInst();
 
 // System Error Handler
 (new \app\core\ErrorHandler($logger))->register();
 
 // System application
-$app = new Application(dirname(__DIR__), $config);
+Application::create(dirname(__DIR__), $config);
+$app = Application::getInstance();
 //(new \app\core\db\Query())->insert('users', ['email', 'firstname', 'lastname', 'status', 'password',],
 //    ['email@gmail.com', 'fadsfasd', 'adsfasdfasdf', '1', 'sdfasdfasdd']);
 

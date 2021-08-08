@@ -83,7 +83,8 @@ $config = $config = [
         'folder' => 'views'
     ],
 ];
-$app = new Application(__DIR__, $config);
+Application::create(__DIR__, $config);
+$app = Application::getInstance();
 
 if (in_array('-up', $argv)) {
     $app->db->applyMigrations();
