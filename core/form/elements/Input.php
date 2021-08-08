@@ -32,6 +32,7 @@ class Input extends Field
     public function __construct(Model $model, string $fieldName, array $options = [])
     {
         $options['type'] ??= self::DEFAULT_TYPE;
+//        $model->isRequired($fieldName);
         try {
             if (!in_array($options['type'], self::ALLOWED_TYPES)) {
                 exit;

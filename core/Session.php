@@ -78,8 +78,7 @@ class Session
         $oneTime = true,
         $closable = true,
         $unique = true
-    )
-    {
+    ) {
         $message = new Message($type, $title, $desc, $visibility, $oneTime, $closable);
         if (self::hasAnyFlash()) {
             foreach ($_SESSION[self::FLASH_KEY] as $key => $msg) {

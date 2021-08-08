@@ -3,13 +3,16 @@
 namespace app\core;
 
 use app\common\helpers\ArrayHelper;
+use app\common\helpers\Sanitizer;
 use app\common\helpers\StringHelper;
 use app\core\db\Query;
+use app\core\notification\Message;
+use modules\DD\DD;
 
 abstract class Model
 {
     public array $errors = [];
-    public const ALLOW_SINGLE_ERROR_MESSAGE = false;
+    public const SINGLE_ERROR_MESSAGE = false;
     public const RULE_REQUIRED = 'required';
 
     public const RULES_MIN = 'min';
@@ -19,10 +22,19 @@ abstract class Model
     public const RULE_MATCH = 'match';
     public const RULE_EMAIL = 'email';
     public const RULE_UNIQUE = 'unique';
+    public const RULE_IN = 'contains_any_value_in_array';
+    public const RULE_ARRAY_FROM_STR = 'array_from_string';
+    public const RULE_DEFAULT_VALUE = 'default_value';
     public const RULE_UNIQUE_TOO_SHORT = 'unique_too_short';
     public const MIN_VALUE_TO_CHECK_UNIQUENESS = 3;
+    /**
+     * @var string|null
+     */
+    public ?string $scenario = null;
+    private ?array $skippedFields = [];
 
     abstract public function rules(): array;
+
     abstract public static function tableName(): string;
 
     public function __construct()
@@ -40,6 +52,7 @@ abstract class Model
                 return $this->{$name};
             }
 
+            $propName = $name;
             $arr = explode('_', $name);
             $arr = array_map(fn($el) => ucfirst($el), $arr);
             $name = implode('', $arr);
@@ -48,7 +61,7 @@ abstract class Model
             if (method_exists($this, $methodName)) {
                 return $this->{$methodName}();
             }
-            throw new \InvalidArgumentException("There is no such field name like \"{$name}\"");
+            throw new \InvalidArgumentException("There is no such field name like \"{$propName}\"");
         } catch (\Exception $exception) {
             exit($exception->getMessage());
         }
@@ -70,91 +83,72 @@ abstract class Model
 
     public function validate(): bool
     {
-        foreach ($this->rules() as $attr => $rules) {
-            $value = $this->{$attr};
-            foreach ($rules as $rule) {
-                $ruleName = $rule; // e.g. self::RULE_REQUIRED, self::RULE_EMAIL
-                if (!is_string($ruleName)) {
-                    /** e.g.
-                     * [self::RULE_UNIQUE, 'class' => self::class] */
-                    $ruleName = $rule[0];
-                }
+        foreach ($this->rules() as $key => $rules) {
+            $attributes = null;
+            if (is_string($key)) {
+                $attributes = $key;
+            } elseif (is_array($rules[0]) && !empty($rules[0])) {
+                $attributesArr = array_slice($rules, 0, 1);
+                unset($rules[0]);
+                $attributes = $attributesArr[0];
+            } elseif (is_string($rules[0])) {
+                $attributes = $rules[0];
+                unset($rules[0]);
+            }
 
-                // exit if singleError = true and there is an error for this field
-                if (!empty($this->errors) && self::ALLOW_SINGLE_ERROR_MESSAGE) {
+            if (method_exists($this, 'scenarios') && isset($this->scenarios()[$this->scenario])) {
+                $scenarioFields = $this->scenarios()[$this->scenario];
+                if (is_string($attributes) && !in_array($attributes, $scenarioFields)) {
+                    $this->skippedFields[$attributes] = true;
                     continue;
                 }
+                if (is_array($attributes)) {
+                    $skipAttrs = array_diff($attributes, $scenarioFields);
+                    if (!empty($skipAttrs)) {
+                        foreach ($attributes as $attrKey => $attribute) {
+                            if (in_array($attribute, $skipAttrs)) {
+                                $this->skippedFields[$attribute] = true;
+                                // remove attribute from checking
+                                unset($attributes[$attrKey]);
+                            }
+                        }
+                    }
+                }
+            }
 
-                // rule
-                // $attr - attribute, field name;
-                // $value - value to be validated
-                switch ($ruleName) {
-                    case self::RULE_REQUIRED:
-                        !$value ? $this->addErrorForRule($attr, self::RULE_REQUIRED) : null;
-                        break;
-                    case self::RULES_MIN:
-                        if (strlen($value) < $rule[self::RULES_MIN]) {
-                            $this->addErrorForRule($attr, self::RULES_MIN, $rule);
-                        }
-                        break;
-                    case self::RULE_MAX:
-                        if (strlen($value) > $rule[self::RULE_MAX]) {
-                            $this->addErrorForRule($attr, self::RULE_MAX, $rule);
-                        }
-                        break;
-                    case self::RULES_MIN_NUM:
-                        if ($value < $rule[self::RULES_MIN_NUM]) {
-                            $this->addErrorForRule($attr, self::RULES_MIN_NUM, $rule);
-                        }
-                        break;
-                    case self::RULE_MAX_NUM:
-                        if ($value > $rule[self::RULE_MAX_NUM]) {
-                            $this->addErrorForRule($attr, self::RULE_MAX_NUM, $rule);
-                        }
-                        break;
-                    case self::RULE_MATCH:
-                        $compareWith = $rule[self::RULE_MATCH];
-                        $rule[self::RULE_MATCH] = $this->getLabel($compareWith);
-                        if ($value !== $this->{$compareWith}) {
-                            $this->addErrorForRule($attr, self::RULE_MATCH, $rule);
-                        }
-                        break;
-                    case self::RULE_EMAIL:
-                        if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                            $this->addErrorForRule($attr, self::RULE_EMAIL);
-                        }
-                        break;
-                    case self::RULE_UNIQUE:
-                        if (strlen($value) <= self::MIN_VALUE_TO_CHECK_UNIQUENESS) {
-                            $this->addErrorForRule($attr, self::RULE_UNIQUE_TOO_SHORT, [
-                                'field' => $this->getLabel($attr),
-                                'n' => self::MIN_VALUE_TO_CHECK_UNIQUENESS
-                            ]);
-                            continue 2;
-                        }
-                        $className = $rule['class'];
-                        $uniqueAttr = $rule['attribute'] ?? $attr;
-                        $tableName = $className::tableName();
-
-//                        DD::dd([$uniqueAttr => $value]);
-                        $record = (new Query())
-                            ->select($uniqueAttr)
-                            ->from($tableName)
-                            ->where([$uniqueAttr => $value])
-//                            ->andWhere(['firstname' => 'Roman'])
-                            ->one();
-                        if ($record) {
-                            $this->addErrorForRule($attr, self::RULE_UNIQUE, ['field' => $this->getLabel($attr)]);
-                        }
-                        break;
-                    default:
-                        $this->addErrorForRule($attr, 'We Have Encountered to an Unknown Validator');
-                        break;
+            $this->checkIncomingAttributes($attributes);
+            if (is_string($attributes)) {
+                $this->validateSingleAttribute($attributes, $rules);
+            } elseif (is_array($attributes) && !empty($attributes)) {
+                foreach ($attributes as $attribute) {
+                    $this->validateSingleAttribute($attribute, $rules);
                 }
             }
         }
+        unset($rules);
+        unset($attribute);
 
-        return empty($this->errors);
+        if ($this->hasErrors()) {
+//            if ($errorsCount == 1) {
+//                $desc = 'The following field is incorrect: ' . HTML::getATag('#' . $fields[0], $fields[0]);
+//            } else {
+//                $desc = 'The following fields are incorrect: ' . implode(', ', $fields);
+//            }
+            $attribNames = array_keys($this->errors);
+            $fields = array_map(fn($attr) =>  sprintf("<li>%s</li>", $this->getLabel($attr)), $attribNames);
+            $desc = 'The following fields are incorrect:<br /><ul>' . implode("\n", $fields);
+            $desc .= "</ul>";
+            Application::$app->session->setFlash(
+                Message::DANGER,
+                'Form Validation',
+                $desc,
+                Message::ADMIN_VISIBLE
+            );
+//            DD::dd($_SESSION);
+        }
+//        DD::dd($this->errors);
+
+        return !$this->hasErrors();
     }
 
     protected function addErrorForRule(string $attr, string $ruleName, $params = [])
@@ -167,9 +161,25 @@ abstract class Model
         $this->errors[$attr][] = $message;
     }
 
+//    public function isRequired(string $fieldName)
+//    {
+//        $rules = $this->rules();
+//        if (isset($rules[$fieldName])) {
+//            return array_search(self::RULE_REQUIRED, $rules[$fieldName]) !== false;
+//        }
+//
+//        foreach ($rules as $rule) {
+//            if (in_array($fieldName, $rule[0]) && in_array('')) {
+//
+//            }
+//        }
+//    }
+
     protected function addError(string $attr, string $message)
     {
-        $this->errors[$attr][] = $message;
+        if ($message) {
+            $this->errors[$attr][] = $message;
+        }
     }
 
     public function errorMessages(): array
@@ -182,12 +192,17 @@ abstract class Model
             self::RULE_MATCH => 'This field  must be same as {match}',
             self::RULE_UNIQUE => 'Record with this {field} already exists',
             self::RULE_UNIQUE_TOO_SHORT => 'The {field} must have at least {n} chars',
+            self::RULE_ARRAY_FROM_STR => 'The {field} must have provide a property to fill',
+            self::RULE_IN => 'The {field} must be in {value_list}',
         ];
     }
 
     public function hasError($fieldName): bool
     {
-        return !empty($this->errors[$fieldName]);
+        if ($this->hasErrors()) {
+            return !empty($this->errors[$fieldName]);
+        }
+        return false;
     }
 
     public function hasErrors(): bool
@@ -197,18 +212,18 @@ abstract class Model
 
     public function getFirstError($fieldName): string
     {
-        if (!$this->hasErrors() || empty($this->errors[$fieldName])) {
-            return '';
-        }
-
-        if (is_array($this->errors[$fieldName]) && !empty($this->errors[$fieldName])) {
+        if ($this->hasError($fieldName)) {
             return $this->errors[$fieldName][0];
         }
-
-        return $this->errors[$fieldName][0];
+        return '';
     }
 
     public function labels(): array
+    {
+        return [];
+    }
+
+    public function scenarios(): array
     {
         return [];
     }
@@ -240,5 +255,160 @@ abstract class Model
     public static function update($data, $where): int
     {
         return Query::getInst()->update(static::tableName(), $data, $where);
+    }
+
+    private function validateSingleAttribute(string $attr, array $rules)
+    {
+        $value = $this->{$attr};
+        foreach ($rules as $rule) {
+            $ruleName = $rule; // e.g. self::RULE_REQUIRED, self::RULE_EMAIL
+            if (!is_string($ruleName)) {
+                /** e.g.
+                 * [self::RULE_UNIQUE, 'class' => self::class] */
+                $ruleName = is_string(array_key_first($rule)) ? array_key_first($rule) : array_shift($rule);
+            }
+
+            // exit if singleError = true and there is an error for this field
+            if ($this->hasError($attr) && self::SINGLE_ERROR_MESSAGE) {
+                continue;
+            }
+
+            // rule
+            // $attr - attribute, field name;
+            // $value - value to be validated
+            // TODO convert all int to int
+//            DD::dd($rule);
+            $ruleValue = $rule[$ruleName] ?? null;
+//            DD::dd($ruleName);
+            switch ($ruleName) {
+                case self::RULE_REQUIRED:
+                    if (!$value && !($value === 0)) {
+                        $this->addErrorForRule($attr, $ruleName);
+                    }
+                    break;
+                case self::RULES_MIN:
+                    $this->{$attr} = filter_var($value, FILTER_SANITIZE_STRING);
+                    if (strlen($value) < $ruleValue) {
+                        $this->addErrorForRule($attr, $ruleName, $rule);
+                    }
+                    break;
+                case self::RULE_MAX:
+//                    $n = strip_tags(html_entity_decode($value));
+                    // TODO check for all strings
+                    $this->{$attr} = strip_tags(html_entity_decode($value));
+//                    DD::dd($value);
+                    if (strlen($value) > $ruleValue) {
+                        $this->addErrorForRule($attr, $ruleName, $rule);
+                    }
+                    break;
+                case self::RULES_MIN_NUM:
+                    if ($value < $ruleValue) {
+                        $this->addErrorForRule($attr, $ruleName, $rule);
+                    }
+                    break;
+                case self::RULE_MAX_NUM:
+                    if ($value > $ruleValue) {
+                        $this->addErrorForRule($attr, $ruleName, $rule);
+                    }
+                    break;
+                case self::RULE_ARRAY_FROM_STR:
+                    if (!is_string($value)) {
+                        throw new \InvalidArgumentException('must be a string!');
+                    }
+                    if (!isset($rule['separated']) || !isset($rule['fill'])) {
+                        throw new \InvalidArgumentException('self::RULE_SEPARATEVALUE_WITH must set the "separated" and "fill"');
+                    }
+
+                    if (empty($value)) {
+                        break;
+                    }
+
+                    $value = Sanitizer::string($value);
+
+                    $pos = ArrayHelper::strposa($this->{$attr}, $rule['separated']);
+//                    DD::dd($pos);
+                    if ($pos >= 0) {
+                        $this->{$rule['fill']} = explode($rule['separated'][$pos], $value);
+                    }
+                    break;
+                // TODO add compare > >= < <= = <> (!=)
+                // TODO date
+                case self::RULE_MATCH:
+                    $compareWith = $ruleValue;
+                    $ruleValue = $this->getLabel($compareWith);
+                    if ($value !== $this->{$compareWith}) {
+                        $this->addErrorForRule($attr, $ruleName, $rule);
+                    }
+                    break;
+                case self::RULE_EMAIL:
+                    if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                        $this->addErrorForRule($attr, $ruleName);
+                    }
+                    break;
+                case self::RULE_DEFAULT_VALUE:
+                    $compareWith = $ruleValue;
+                    if (!($value || $compareWith) && !($value == 0 && $compareWith == 0)) {
+                        $this->addErrorForRule($attr, $ruleName);
+                    }
+
+                    if (!empty($value) || $value === 0) {
+                        $this->{$attr} = $value;
+                    } else {
+                        $this->{$attr} = $compareWith;
+                    }
+                    break;
+                case self::RULE_IN:
+                    if (is_array($ruleValue) || empty($ruleValue)) {
+                        // TODO CORE_ERROR [output message only for developers]
+                        throw new \InvalidArgumentException('self::RULE_IN requires an array of values');
+                    }
+                    if (in_array($value, $ruleValue)) {
+                        $this->addErrorForRule($attr, $ruleName, [
+                            'field' => $this->getLabel($attr),
+                            'value_list' => implode(', ', $ruleValue)
+                        ]);
+                    }
+                    break;
+                case self::RULE_UNIQUE:
+                    if (strlen($value) <= self::MIN_VALUE_TO_CHECK_UNIQUENESS) {
+                        $this->addErrorForRule($attr, $ruleName, [
+                            'field' => $this->getLabel($attr),
+                            'n' => self::MIN_VALUE_TO_CHECK_UNIQUENESS
+                        ]);
+                        continue 2;
+                    }
+                    $className = $rule['class'];
+                    $uniqueAttr = $rule['attribute'] ?? $attr;
+                    $tableName = $className::tableName();
+
+//                        DD::dd([$uniqueAttr => $value]);
+                    $record = (new Query())
+                        ->select($uniqueAttr)
+                        ->from($tableName)
+                        ->where([$uniqueAttr => $value])
+//                            ->andWhere(['firstname' => 'Roman'])
+                        ->one();
+                    if ($record) {
+                        $this->addErrorForRule($attr, $ruleName, ['field' => $this->getLabel($attr)]);
+                    }
+                    break;
+                default:
+                    $this->addErrorForRule($attr, 'We Have Encountered to an Unknown Validator');
+                    break;
+            }
+        }
+    }
+
+    /**
+     * @param $attributes
+     */
+    private function checkIncomingAttributes($attributes): void
+    {
+        if (
+            !(isset($attributes) && is_string($attributes)) &&
+            !(isset($attributes) && is_array($attributes))
+        ) {
+            throw new \InvalidArgumentException("You must use either an array of attributes or a single attribute name");
+        }
     }
 }

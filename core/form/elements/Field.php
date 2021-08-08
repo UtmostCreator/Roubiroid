@@ -126,7 +126,7 @@ abstract class Field
 
         try {
             if (!is_array($options)) {
-                $response = 'Options must be an array of options ("type", "value", "required", "placeholder", "class", "new-password"';
+                $response = sprintf('Allowed options ("%s")', implode('", "', self::ALLOWED_OPTIONS));
                 throw new \InvalidArgumentException($response);
             }
         } catch (Exception $exception) {

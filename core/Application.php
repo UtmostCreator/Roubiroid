@@ -24,30 +24,36 @@ class Application
     public ?UserModel $user = null;
     public ?View $view = null;
 
-    public function __construct(string $rootPath, array $config)
+    private function __construct()
     {
+    }
+
+    public static function create(string $rootPath, array $config)
+    {
+        $app = new self();
         static::$config = $config;
-        $this->userClass = $config['userClass'] ?? '';
-        $this->layout = $config['layout']['value'] ?? '';
+        $app->userClass = $config['userClass'] ?? '';
+        $app->layout = $config['layout']['value'] ?? '';
         static::$ROOT_DIR = $rootPath;
-        $this->view = new View();
-        $this->request = new Request();
-        $this->response = new Response();
-        $this->session = new Session();
-        $this->router = new Router($this->request, $this->response);
-        static::$app = $this;
+        $app->view = new View();
+        $app->request = new Request();
+        $app->response = new Response();
+        $app->session = new Session();
+        $app->router = new Router($app->request, $app->response);
+        static::$app = $app;
 
         $defConnection = $config['default'];
         $dbConfig = $config['connections'][$defConnection];
 
-        $this->db = new Database($dbConfig);
+        $app->db = new Database($dbConfig);
 
-        $primaryValue = $this->session->get('user');
+        $primaryValue = $app->session->get('user');
         if ($primaryValue) {
-            $primaryKey = $this->userClass::primaryKey();
-            $this->user = $this->userClass::findOne([$primaryKey => $primaryValue]);
+            $primaryKey = $app->userClass::primaryKey();
+            $app->user = $app->userClass::findOne([$primaryKey => $primaryValue]);
         }
     }
+
 
     public static function app(): Application
     {
@@ -59,6 +65,11 @@ class Application
         } catch (\Exception $exception) {
             exit($exception->getMessage());
         }
+    }
+
+    public static function getInstance()
+    {
+        return self::app();
     }
 
     public function run()

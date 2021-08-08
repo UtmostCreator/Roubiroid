@@ -5,7 +5,6 @@ namespace app\core\db;
 use app\common\helpers\ArrayHelper;
 use app\common\helpers\StringHelper;
 use app\core\Application;
-use Exception;
 use modules\DD\DD;
 use PDO;
 use PDOStatement;
@@ -63,7 +62,7 @@ class Query
 
     public static function getInst(): Query
     {
-        if (empty(self::$inst)) {
+        if (is_null(self::$inst)) {
             return new static();
         }
 

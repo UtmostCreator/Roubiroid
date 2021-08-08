@@ -11,10 +11,19 @@ namespace app\core;
 class Logger
 {
     protected Session $session;
+    private static ?Logger $inst = null;
 
-    public function __construct()
+    private function __construct()
     {
-        $this->session = new Session();
+    }
+
+    public static function getInst(): self
+    {
+        if (is_null(self::$inst)) {
+            return new self();
+        }
+
+        return self::$inst;
     }
 
     // TODO
@@ -40,8 +49,9 @@ class Logger
             $msg = ['message' => htmlentities($msg), 'level' => $level];
         }
 
-        $logs = $this->session->get("logs");
-        $logs[] = $msg;
-        $this->session->set("logs", $logs);
+        // TODO create file logger
+//        $logs = $this->session->get("logs");
+//        $logs[] = $msg;
+//        $this->session->set("logs", $logs);
     }
 }

@@ -5,6 +5,7 @@ namespace app\core\form;
 use app\core\form\elements\Input;
 use app\core\form\elements\Textarea;
 use app\core\Model;
+use Exception;
 
 class Form
 {
@@ -50,9 +51,9 @@ class Form
      * @param string $action
      * @param string $method
      * @param array $options
-     * @return string|string[]
+     * @return Form
      */
-    public static function begin(string $action, string $method, array $options)
+    public static function begin(string $action, string $method, array $options): self
     {
 
         $action = strlen($action) === 0 && self::DEFAULT_METHOD_CURRENT ? $_SERVER['REQUEST_URI'] : $action;
@@ -60,10 +61,10 @@ class Form
         self::$HTML = self::validateAttributes($options);
         echo self::$HTML;
 
-        return new Form();
+        return new self();
     }
 
-    public static function end()
+    public static function end(): string
     {
         return '</form>';
     }
@@ -77,17 +78,22 @@ class Form
             }
             $pos = strpos(self::$HTML, '>');
             if (isset($value) && in_array($value, self::OPTIONAL_PROPS[$key])) {
-                self::$HTML = substr_replace(self::$HTML, " {$key}='{$value}'", $pos, 0); // inserts a string into position $pos
+                // inserts a string into position $pos
+                self::$HTML = substr_replace(self::$HTML, " {$key}='{$value}'", $pos, 0);
             } else {
                 self::$HTML = substr_replace(self::$HTML, " {$key}='{$value}'", $pos, 0);
             }
         }
         foreach (self::$ERRORS as $error) {
-            self::$HTML .= '<div class="alert alert-danger" role="alert">' . $error . '</div>' . PHP_EOL; // TODO add a Notification for existing class
+            // TODO add a Notification for existing class
+            self::$HTML .= '<div class="alert alert-danger" role="alert">' . $error . '</div>' . PHP_EOL;
         }
         return self::$HTML;
     }
 
+    /**
+     * @throws Exception
+     */
     public function input(Model $model, $fieldName, $options = []): Input
     {
 //        echo ;
