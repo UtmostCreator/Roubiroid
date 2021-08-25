@@ -1,8 +1,8 @@
 <?php
 
-namespace App\core\helpers;
+namespace Framework\helpers;
 
-use modules\DD\DD;
+use Modules\DD;
 
 function _matcher($m, $str)
 {

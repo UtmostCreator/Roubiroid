@@ -1,14 +1,14 @@
 <?php
 
 
-namespace App\core\helpers;
+namespace Framework\helpers;
 
 
 /**
  * Class FileHelper
  *
  * @author Roman Zakhriapa <utmostcreator@gmail.com>
- * @package App\core\helpers
+ * @package Framework\helpers
  */
 class FileHelper
 {

@@ -1,15 +1,20 @@
 <?php
 
-use App\core\Router;
+use Framework\Application;
+use Framework\authentication\AuthManager;
+use Framework\authentication\InterfaceAuthBase;
+use Framework\View\Engine\BaseEngine;
+use Framework\View\Engine\PhpEngine;
+use Framework\View\Manager;
 
 if (!function_exists('app')) {
     /**
      * Get app instance.
-     * @return mixed|\App\core\Application
+     * @return mixed|Application
      */
-    function app(): \App\core\Application
+    function app(): Application
     {
-        return \App\core\Application::app();
+        return Application::app();
     }
 }
 
@@ -19,13 +24,13 @@ if (!function_exists('abort')) {
      */
     function abort(int $statusCode, string $errMessage = ''): void
     {
-//        \modules\DD\DD::dd($errMessage);
+//        \Modules\DD\DD::dd($errMessage);
         try {
-//        \modules\DD\DD::dd(app()->router::getRoutes()['get']);
+//        \Modules\DD\DD::dd(app()->router::getRoutes()['get']);
 
-//            \modules\DD\DD::dd(app()->router::getRoutes());
+//            \Modules\DD\DD::dd(app()->router::getRoutes());
             $abortMethod = app()->router::getRoutes()[$statusCode];
-//        \modules\DD\DD::dd($abortMethod);
+//        \Modules\DD\DD::dd($abortMethod);
             if (isset($abortMethod) && $abortMethod instanceof \Closure) {
 //                echo $errMessage;
                 $abortMethod();
@@ -55,11 +60,11 @@ if (!function_exists('contactYourAdministrator')) {
 if (!function_exists('auth')) {
     /**
      * Get app instance.
-     * @return \App\core\authentication\AuthManager
+     * @return AuthManager
      */
-    function auth(): \App\core\authentication\InterfaceAuthBase
+    function auth(): InterfaceAuthBase
     {
-        return \App\core\Application::app()->auth(); // AuthManager
+        return Application::app()->auth(); // AuthManager
     }
 }
 
@@ -70,7 +75,7 @@ if (!function_exists('dd')) {
      */
     function dd($args)
     {
-        return \modules\DD\DD::dd($args); // AuthManager
+        \Modules\DD::dd($args); // AuthManager
     }
 }
 
@@ -81,7 +86,7 @@ if (!function_exists('isAuth')) {
      */
     function isAuth(): bool
     {
-        return \App\core\Application::isAuth();
+        return Application::isAuth();
     }
 }
 
@@ -92,7 +97,7 @@ if (!function_exists('isGuest')) {
      */
     function isGuest(): bool
     {
-        return \App\core\Application::isGuest();
+        return Application::isGuest();
     }
 }
 
@@ -106,5 +111,29 @@ if (!function_exists('base_path')) {
     function base_path($path = '')
     {
         return app()->basePath($path);
+    }
+}
+
+if (!function_exists('view')) {
+    function view(string $template, array $data): string
+    {
+        static $manager;
+
+        if (!$manager) {
+            $manager = new Manager();
+
+            // let's add a pth for our views folder
+            // so the manager knows where to look for view
+            $manager->addPath(base_path() . '/resources/views');
+            // we'll also start adding new engine classes
+            // with their expected extensions to be able to pick
+            // the appropriate engine for the template
+            $manager->addEngine('basic.php', new BaseEngine());
+
+            // must be registered last, because the first extension match is returned
+            $manager->addEngine('php', new PhpEngine());
+        }
+
+        return $manager->render($template, $data);
     }
 }
