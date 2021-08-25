@@ -1,6 +1,6 @@
 <?php
 
-use app\core\db\migration\IMigration;
+use Framework\db\migration\IMigration;
 
 class m04072021_123211_notification_table implements IMigration
 {
@@ -8,7 +8,7 @@ class m04072021_123211_notification_table implements IMigration
 
     public function up()
     {
-        $db = \app\core\Application::$app->db;
+        $db = \Framework\Application::$app->db;
         $sql = "CREATE TABLE `notifications` (
                   `id` char(36) NOT NULL,
                   `type` varchar(255) NOT NULL,

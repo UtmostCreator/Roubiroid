@@ -1,13 +1,13 @@
 <?php
 
-use app\core\db\migration\IMigration;
+use Framework\db\migration\IMigration;
 
 class m24062021_175722_permissions_table implements IMigration
 {
 
     public function up()
     {
-        $db = \app\core\Application::$app->db;
+        $db = \Framework\Application::$app->db;
         $sql = "CREATE TABLE IF NOT EXISTS `permissions` (
                   `id` bigint(20) UNSIGNED NOT NULL,
                   `name` varchar(255) NOT NULL,

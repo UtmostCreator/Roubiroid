@@ -1,7 +1,7 @@
 <?php
 
-use app\core\Application;
-use modules\DD\DD;
+use Framework\Application;
+use Modules\DD;
 
 class m30052021_203133_add_password_to_users
 {

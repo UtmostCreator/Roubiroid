@@ -4,7 +4,7 @@ class m23052021_203133_users_table
 {
     public function up()
     {
-        $db = \app\core\Application::$app->db;
+        $db = \Framework\Application::$app->db;
         $sql = "CREATE TABLE IF NOT EXISTS users (
             id INT(11) UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
             email VARCHAR(255) NOT NULL,

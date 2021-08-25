@@ -1,13 +1,13 @@
 <?php
 
-use app\core\db\migration\IMigration;
+use Framework\db\migration\IMigration;
 
 class m24062021_180546_model_has_roles_table implements IMigration
 {
 
     public function up()
     {
-        $db = \app\core\Application::$app->db;
+        $db = \Framework\Application::$app->db;
         $sql = "CREATE TABLE `model_has_roles` (
                   `role_id` bigint(20) UNSIGNED NOT NULL,
                   `model_type` varchar(255) NOT NULL,
