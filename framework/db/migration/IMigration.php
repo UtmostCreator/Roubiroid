@@ -1,6 +1,6 @@
 <?php
 
-namespace App\core\db\migration;
+namespace Framework\db\migration;
 
 interface IMigration
 {

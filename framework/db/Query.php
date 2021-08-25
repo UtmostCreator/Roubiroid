@@ -1,11 +1,11 @@
 <?php
 
-namespace App\core\db;
+namespace Framework\db;
 
-use App\core\helpers\ArrayHelper;
-use App\core\helpers\StringHelper;
-use App\core\Application;
-use modules\DD\DD;
+use Framework\helpers\ArrayHelper;
+use Framework\helpers\StringHelper;
+use Framework\Application;
+use Modules\DD;
 use PDO;
 use PDOStatement;
 
@@ -13,7 +13,7 @@ use PDOStatement;
  * Class Query
  *
  * @author Roman Zakhriapa <utmostcreator@gmail.com>
- * @package App\core\db
+ * @package Framework\db
  */
 class Query
 {

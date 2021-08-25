@@ -1,6 +1,6 @@
 <?php
 
-namespace App\core\db;
+namespace Framework\db;
 
 // TODO remove file
 trait HasRelationships

@@ -1,11 +1,11 @@
 <?php
 
 
-namespace App\core\db\migration;
+namespace Framework\db\migration;
 
 
-use App\core\helpers\FileHelper;
-use App\core\Application;
+use Framework\helpers\FileHelper;
+use Framework\Application;
 
 class AbstractMigration
 {

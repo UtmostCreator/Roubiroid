@@ -1,19 +1,19 @@
 <?php
 
-namespace App\core\db;
+namespace Framework\db;
 
-use App\core\helpers\ArrayHelper;
-use App\core\helpers\FileHelper;
-use App\core\Application;
-use App\core\db\migration\AbstractMigration;
-use App\core\Logger;
+use Framework\helpers\ArrayHelper;
+use Framework\helpers\FileHelper;
+use Framework\Application;
+use Framework\db\migration\AbstractMigration;
+use Framework\Logger;
 use PDO;
 
 /**
  * Class Database
  *
  * @author Roman Zakhriapa <utmostcreator@gmail.com>
- * @package App\core
+ * @package Framework
  */
 class Database
 {
