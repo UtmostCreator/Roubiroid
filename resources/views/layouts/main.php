@@ -1,8 +1,8 @@
 <?php
 
-use app\core\Application;
-use app\core\form\Form;
-use app\core\PointTo;
+use Framework\Application;
+use Framework\View\form\Form;
+use Framework\PointTo;
 
 ?>
 <!doctype html>

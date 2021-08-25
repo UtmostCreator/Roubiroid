@@ -1,9 +1,9 @@
 <?php
 
-use app\core\form\Form;
+use Framework\View\form\Form;
 
-/** @var \app\models\ContactForm $model */
-/** @var \app\core\View $this */
+/** @var \models\ContactForm $model */
+/** @var \Framework\View $this */
 $this->title = 'Contact us';
 //dd(auth()->user());
 $form = Form::begin('', 'post', ['enctype' => Form::ENCTYPE_DEFAULT, 'class' => 'custom-class']); ?>

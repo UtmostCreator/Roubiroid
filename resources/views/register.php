@@ -1,9 +1,9 @@
 <?php
 
-use app\core\form\Form;
-use app\models\User;
+use Framework\View\form\Form;
+use models\User;
 
-//\modules\DD\DD::dd($_SERVER); //phpinfo()
+//\Modules\DD\DD::dd($_SERVER); //phpinfo()
 /** @var User $model */
 
 $form = Form::begin('', 'post', ['enctype' => Form::ENCTYPE_DEFAULT, 'class' => 'custom-class']); ?>

@@ -1,6 +1,6 @@
 <?php
-/** @var \app\core\View $this */
+/** @var \Framework\View $this */
 $this->title = 'Profile';
-//\modules\DD\DD::dd($this);
+//\Modules\DD\DD::dd($this);
 ?>
 Profile

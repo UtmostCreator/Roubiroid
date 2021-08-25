@@ -1,6 +1,6 @@
 <?php
 
-use app\core\PointTo;
+use Framework\PointTo;
 
 ?>
 <!doctype html>

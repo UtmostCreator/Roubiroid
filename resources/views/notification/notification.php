@@ -1,9 +1,10 @@
 <?php
 
-use app\core\Application;
-use app\core\notification\Message;
+use Framework\Application;
+use Framework\notification\Message;
 
-//if (Session::get('loggedIn') && Notification::hasAny()) : ?>
+// TODO add UserModel Session::get('loggedIn')
+if (app()->session->hasAnyFlash()) : ?>
     <div class="notification-area">
 
         <div class="notification-area--user">
@@ -17,4 +18,4 @@ use app\core\notification\Message;
 <!--        --><?php //endif; ?>
 
     </div>
-<?php //endif; ?>
+<?php endif; ?>
