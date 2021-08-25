@@ -1,8 +1,8 @@
 <?php
 
-namespace App\core\exceptions;
+namespace Framework\exceptions;
 
-use App\core\Application;
+use Framework\Application;
 use Throwable;
 
 class ForbiddenException extends \Exception
