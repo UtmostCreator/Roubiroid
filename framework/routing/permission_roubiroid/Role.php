@@ -1,6 +1,6 @@
 <?php
 
-namespace Framework\permission_roubiroid;
+namespace Framework\routing\permission_roubiroid;
 
 use Framework\Model;
 

@@ -1,23 +1,25 @@
 <?php
 
-namespace App\core\routing;
+namespace Framework\routing;
 
-use App\core\helpers\StringHelper;
-use App\core\Application;
-use App\core\middlewares\AuthMiddleware;
-use App\core\middlewares\BaseMiddleware;
-use App\core\Request;
-use App\core\Response;
-use modules\DD\DD;
+use Framework\Application;
+use Framework\helpers\StringHelper;
+use Framework\middlewares\AuthMiddleware;
+use Framework\middlewares\BaseMiddleware;
+use Framework\Request;
+use Framework\Response;
+use Modules\DD;
 
 class Router
 {
-    protected Route $activeRoute;
     public Request $request;
     public Response $response;
-    public static ?Router $instance = null;
+    protected Route $activeRoute;
+    protected static ?Router $instance = null;
     private static array $rules = [];
     protected static array $routes = [];
+    public const DEFAULT_REDIRECT_METHOD = 'get';
+    public static string $redirectMethod = self::DEFAULT_REDIRECT_METHOD;
 
     // TODO implement all of these
 //    get, post, patch, put, delete, head
@@ -34,20 +36,34 @@ class Router
 //        $this->activeRoute = new Route('', '', new RouteHandler());
     }
 
-    public static function get(string $path, $callback): Route
+    public static function getInstance(Request $request, Response $response): Router
     {
-        $route = static::addNew('get', $path, $callback);
-        return $route;
+        if (is_null(self::$instance)) {
+            return new self($request, $response);
+        }
+
+        return self::$instance;
     }
 
+    /**
+     * @throws \Exception
+     */
+    public static function get(string $path, $callback): Route
+    {
+        return static::addNew(__FUNCTION__, $path, $callback);
+    }
+
+    /**
+     * @throws \Exception
+     */
     public static function post(string $path, $callback): Route
     {
-        $route = static::addNew('post', $path, $callback);
-        return $route;
+        return static::addNew(__FUNCTION__, $path, $callback);
     }
 
     public static function addSystem(string $path, \Closure $method): void
     {
+        // protected array $errorHandler = []; add to class and save these routes there!
         $route = self::$routes[$path] = $method;
         // TODO return system route here
 //        return $route;
@@ -76,6 +92,7 @@ class Router
     public static function group(array $array, \Closure $fillInTheSuppliedRoutes): void
     {
         static::$rules = $array;
+        // adds the rules for the list of routes
         $fillInTheSuppliedRoutes();
         static::$rules = [];
 //        DD::dd();
@@ -86,6 +103,7 @@ class Router
      * @param string $path
      * @param $callback
      * e.g. ['accessControls'][$method][$accessName][$route]
+     * @throws \Exception
      */
     private static function calculateAccessRules(string $method, string $path, $callback): void
     {
@@ -154,24 +172,17 @@ class Router
         }
     }
 
-    // TODO check if correct.
-    public static function getInstance(Request $request, Response $response): Router
-    {
-        if (is_null(self::$instance)) {
-            return new self($request, $response);
-        }
-
-        return self::$instance;
-    }
-
     /* @description this is used for named routes mechanic
      */
     public static function route(string $name, array $parameters = []): string
     {
-        foreach (self::$routes as $route) {
+        self::$redirectMethod ??= self::DEFAULT_REDIRECT_METHOD;
+        foreach (self::$routes[self::$redirectMethod] as $route) {
             if ($route->name() !== $name) {
-                throw new \Exception('no route with that name');
+                continue;
             }
+
+//            DD::dd($route);
 
             $finds = [];
             $replaces = [];
@@ -187,19 +198,21 @@ class Router
                 array_push($finds, "{{$key}?}");
                 array_push($replaces, $value);
             }
+            // URL = http://php-c-framework/products/1/view/
+            //DD::dd($replaces); // e.g. $finds = array(2) { [0]=> string(6) "{page}" [1]=> string(7) "{page?}" }
+            // e.g. $replaces = array(2) { [0]=> int(2) [1]=> int(2) }
 
             $path = $route->path;
             // from this '/products/{page}' '{page}' will be replaced with its value
             // from this '/products/{page?}' '{page?}' will be replaced with its value
             $path = str_replace($finds, $replaces, $path);
-
             // remove any optional parameters not provided
-            $path = preg_replace("#{[^}]+}#", '', $path);
-
-            // we should think about warning if a required
+            $path = preg_replace("#{[^}]+}#", '', $path); // from '/products/2{test}{test?}' to '/products/2'
+            // TODO we should think about warning if a required
             // parameter hasn't been provided...
             return $path;
         }
+        throw new \Exception('no route with that name "' . $name . '"');
     }
 
     public function resolve()
@@ -258,6 +271,9 @@ class Router
             // this action could be thrown and exception
             // so we catch it and display the global error
             // page that we will define in the routes file
+            if (SERVER_TYPE === 'LOCAL') {
+                throw new \Exception($t->getMessage() . "<br/>" . $t->getFile());
+            }
             return $this->dispatchError();
         }
     }
@@ -275,6 +291,8 @@ class Router
                 return $route;
             }
         }
+        // or just use the following if the loop is not used
+        // return isset(static::$routes[$method]) && isset(static::$routes[$method][$path]) ? static::$routes[$method][$path] : null;
         return null;
     }
 
@@ -303,9 +321,9 @@ class Router
         return (static::$routes[500])();
     }
 
-    public static function current(): ?Route
+    public static function getActiveRoute(): ?Route
     {
-        return self::$instance;
+        return self::$instance->activeRoute;
     }
 
     /**

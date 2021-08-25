@@ -1,10 +1,10 @@
 <?php
 
 
-namespace Framework\rbac;
+namespace Framework\routing\rbac;
 
 use Framework\Controller;
-use App\models\User;
+use models\User;
 
 /**
  * auth_assignments -- each user may have 1 or more permissions

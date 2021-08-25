@@ -1,6 +1,6 @@
 <?php
 
-namespace Framework\rbac;
+namespace Framework\routing\rbac;
 
 // Policies is used for grouping gates (permissions) or for 1 specific model
 

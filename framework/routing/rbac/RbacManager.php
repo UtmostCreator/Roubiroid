@@ -1,6 +1,6 @@
 <?php
 
-namespace Framework\rbac;
+namespace Framework\routing\rbac;
 
 use Framework\Application;
 use Framework\db\Query;
