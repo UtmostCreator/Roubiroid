@@ -1,8 +1,8 @@
 <?php
 
-namespace App\core\authentication;
+namespace Framework\authentication;
 
-use App\core\UserModel;
+use Framework\UserModel;
 
 interface InterfaceAuthBase
 {

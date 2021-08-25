@@ -1,10 +1,10 @@
 <?php
 
-namespace App\core\authentication;
+namespace Framework\authentication;
 
-use App\core\Application;
-use App\core\UserModel;
-use App\models\User;
+use Framework\Application;
+use Framework\UserModel;
+use models\User;
 
 class AuthManager extends AbstractAuthBase
 {

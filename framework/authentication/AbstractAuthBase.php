@@ -1,6 +1,6 @@
 <?php
 
-namespace App\core\authentication;
+namespace Framework\authentication;
 
 abstract class AbstractAuthBase implements InterfaceAuthBase
 {
