@@ -1,9 +1,9 @@
 <?php
 
-namespace Framework\form;
+namespace Framework\View\form;
 
-use Framework\form\elements\Input;
-use Framework\form\elements\Textarea;
+use Framework\View\form\elements\Input;
+use Framework\View\form\elements\Textarea;
 use Framework\Model;
 use Exception;
 
@@ -56,7 +56,7 @@ class Form
     public static function begin(string $action, string $method, array $options): self
     {
 
-        $action = strlen($action) === 0 && self::DEFAULT_METHOD_CURRENT ? $_SERVER['REQUEST_URI'] : $action;
+        $action = strlen($action) === 0 && self::DEFAULT_METHOD_CURRENT ? app()->request->getUri() : $action;
         self::$HTML = sprintf('<form action="%s" method="%s">', $action, $method) . PHP_EOL;
         self::$HTML = self::validateAttributes($options);
         echo self::$HTML;

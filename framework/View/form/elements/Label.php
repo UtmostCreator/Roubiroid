@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Framework\form\elements;
+namespace Framework\View\form\elements;
 
 
 use Framework\helpers\StringHelper;

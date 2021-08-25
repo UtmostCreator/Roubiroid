@@ -1,9 +1,9 @@
 <?php
 
-namespace Framework\form\elements;
+namespace Framework\View\form\elements;
 
-use Framework\Model;
 use Exception;
+use Framework\Model;
 
 class Input extends Field
 {
