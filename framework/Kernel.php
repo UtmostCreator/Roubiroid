@@ -1,11 +1,9 @@
 <?php
 
+namespace Framework;
 
-namespace App\core;
-
-
-use App\core\authentication\AuthManager;
-use App\core\middlewares\AuthMiddleware;
+use Framework\authentication\AuthManager;
+use Framework\middlewares\AuthMiddleware;
 
 class Kernel
 {
@@ -15,7 +13,7 @@ class Kernel
      * These middleware are run during every request to your application
      *
      * @var array
-    */
+     */
     protected array $middleware = [
         AuthMiddleware::class,
 //        TrustProxies::class,
@@ -31,7 +29,7 @@ class Kernel
      * The application's route middleware groups.
      *
      * @var array
-    */
+     */
     protected $middlewareGroups = [
 //        EncryptCookies::class, // ....
 //        StartSession::class, // ....

@@ -1,7 +1,7 @@
 <?php
 
-use app\core\Application;
-use app\models\User;
+use Framework\Application;
+use models\User;
 
 /* ERROR REPORTING */
 ini_set('display_errors', '1');
@@ -71,7 +71,7 @@ $config = $config = [
         ]
     ],
 
-    'userClass' => \app\models\User::class,
+    'userClass' => \models\User::class,
     'website' => [
         'name' => 'Your Web Site Name'
     ],

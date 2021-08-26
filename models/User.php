@@ -1,13 +1,9 @@
 <?php
 
-namespace app\models;
+namespace models;
 
-use app\core\db\DbModel;
-use app\core\db\Query;
-use app\core\Model;
-use app\core\permission_roubiroid\HasRoles;
-use app\core\UserModel;
-use modules\DD\DD;
+use Framework\routing\permission_roubiroid\HasRoles;
+use Framework\UserModel;
 
 class User extends UserModel
 {

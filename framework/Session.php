@@ -1,9 +1,9 @@
 <?php
 
-namespace App\core;
+namespace Framework;
 
-use App\core\notification\Message;
-use modules\DD\DD;
+use Framework\notification\Message;
+use Modules\DD;
 
 class Session
 {
@@ -65,9 +65,9 @@ class Session
         }
     }
 
-    protected function hasAnyFlash(): bool
+    public function hasAnyFlash(): bool
     {
-        return isset($_SESSION[self::FLASH_KEY]);
+        return !empty($_SESSION[self::FLASH_KEY]);
     }
 
     public function setFlash(
@@ -107,6 +107,7 @@ class Session
 
     public function getAllFlashes($where = ['oneTime' => true], $oneTime = true): bool
     {
+
         if (empty($_SESSION[self::FLASH_KEY])) {
             return false;
         }

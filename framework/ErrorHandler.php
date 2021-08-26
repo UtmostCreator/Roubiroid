@@ -1,6 +1,6 @@
 <?php
 
-namespace App\core;
+namespace Framework;
 
 class ErrorHandler
 {

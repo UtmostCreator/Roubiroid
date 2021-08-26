@@ -1,16 +1,14 @@
 <?php
 
-namespace app\http\controllers;
+namespace App\Http\Controllers;
 
-use app\core\Application;
-use app\core\Controller;
-use app\core\middlewares\AuthMiddleware;
-use app\core\notification\Message;
-use app\core\Request;
-use app\core\Response;
-use app\models\LoginForm;
-use app\models\User;
-use modules\DD\DD;
+use Framework\Application;
+use Framework\Controller;
+use Framework\notification\Message;
+use Framework\Request;
+use Framework\Response;
+use models\LoginForm;
+use models\User;
 
 class AuthController extends Controller
 {

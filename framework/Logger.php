@@ -1,12 +1,12 @@
 <?php
 
-namespace core\core;
+namespace Framework;
 
 /**
  * Class Logger
  *
  * @author Roman Zakhriapa <utmostcreator@gmail.com>
- * @package App\core
+ * @package Framework
  */
 class Logger
 {

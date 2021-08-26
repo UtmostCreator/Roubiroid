@@ -1,6 +1,6 @@
 <?php
 
-namespace App\core;
+namespace Framework;
 
 class PointTo
 {
@@ -11,7 +11,7 @@ class PointTo
 
     public static function views($path): string
     {
-        return static::getBase() . 'views/' . $path;
+        return static::getBase() . 'resources/views/' . $path;
     }
 
     public static function to(string $folderPath, string $file): string

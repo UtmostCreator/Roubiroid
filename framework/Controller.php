@@ -1,8 +1,8 @@
 <?php
 
-namespace App\core;
+namespace Framework;
 
-use App\core\middlewares\BaseMiddleware;
+use Framework\middlewares\BaseMiddleware;
 
 class Controller
 {

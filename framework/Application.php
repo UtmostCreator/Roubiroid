@@ -1,11 +1,11 @@
 <?php
 
-namespace App\core;
+namespace Framework;
 
-use App\core\authentication\AuthManager;
-use App\core\authentication\InterfaceAuthBase;
-use App\core\db\Database;
-use App\core\routing\Router;
+use Framework\authentication\AuthManager;
+use Framework\authentication\InterfaceAuthBase;
+use Framework\db\Database;
+use Framework\routing\Router;
 
 class Application
 {

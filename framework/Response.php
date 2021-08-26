@@ -1,14 +1,14 @@
 <?php
 
-namespace App\core;
+namespace Framework;
 
-use modules\DD\DD;
+use Modules\DD;
 
 /**
  * Class Response
  *
  * @author Roman Zakhriapa <utmostcreator@gmail.com>
- * @package App\core
+ * @package Framework
  */
 class Response
 {
@@ -51,9 +51,9 @@ class Response
                 break;
             case '':
             case 'back':
-                $isTheSameUrl = URL::getBase(false) . $_SERVER['REQUEST_URI'];
-                if (isset($_SERVER['HTTP_REFERER']) && $isTheSameUrl !== $_SERVER['HTTP_REFERER']) {
-                    header('Location: ' . $_SERVER['HTTP_REFERER'], true, $statusCode);
+                $isTheSameUrl = URL::getBase(false) . app()->request->getUri();
+                if (!empty(app()->request->getUri()) && $isTheSameUrl !== app()->request->refererPage()) {
+                    header('Location: ' . app()->request->refererPage(), true, $statusCode);
                 } else {
                     header('Location: ' . URL::getBase(false), true, $statusCode);
                 }

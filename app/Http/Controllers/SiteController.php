@@ -1,21 +1,21 @@
 <?php
 
-namespace app\controllers;
+namespace App\Http\Controllers;
 
-use app\core\Application;
-use app\core\Controller;
-use app\core\notification\Message;
-use app\core\Request;
-use app\core\Response;
-use app\core\routing\Router;
-use app\models\ContactForm;
-use modules\DD\DD;
+use Framework\Application;
+use Framework\Controller;
+use Framework\notification\Message;
+use Framework\Request;
+use Framework\Response;
+use Framework\routing\Router;
+use models\ContactForm;
+use Modules\DD;
 
 /**
  * Class SiteController
  *
  * @author Roman Zakhriapa <utmostcreator@gmail.com>
- * @package app\controllers
+ * @package App\Controllers
  */
 class SiteController extends Controller
 {
@@ -26,6 +26,7 @@ class SiteController extends Controller
 
     public function home()
     {
+//        DD::dd(debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 1));
 //        DD::dd(Session::getAll());
         $params = ['name' => 'Some Value', 'arr' => ['terst', 'value']];
         return $this->render('home', $params);
@@ -60,16 +61,20 @@ class SiteController extends Controller
 
     public function viewProduct()
     {
-        $parameters = Router::current()->parameters();
+        $parameters = Router::getActiveRoute()->parameters();
 //        DD::dd($parameters);
         echo "viewProduct";
 //        DD:\dd(1);
-//        \modules\DD\DD::dd($parameters);
+//        \Modules\DD\DD::dd($parameters);
     }
 
     public function viewProductV2()
     {
-        echo 'viewP vw';
+        return view('products/view', [
+            'product' => 'test',
+            'scary' => '<script>alert("boo!")</script>'
+        ]);
+        Router::route('product-list', ['page' => 2, 'name' => 'test']);
 //        DD::dd(Router::current()->parameters());
     }
 

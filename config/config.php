@@ -1,12 +1,12 @@
 <?php
 
 require_once 'consts.php';
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(dirname(__DIR__)));
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
 defined('ASSET_URL') ?: define('ASSET_URL', $_ENV['ASSET_URL']);
 defined('HOST_BASE') ?: define('HOST_BASE', $_SERVER['SERVER_NAME']);
-//\modules\DD\DD::dd(ASSET_URL);
+//\Modules\DD\DD::dd(ASSET_URL);
 return $config = [
     /*
     |--------------------------------------------------------------------------
@@ -34,7 +34,7 @@ return $config = [
         'folder' => 'migrations',
         'table' => 'migrations'
     ],
-    'userClass' => \app\models\User::class,
+    'userClass' => \models\User::class,
     'db' => [
         'dsn' => $_ENV['DB_DSN'],
         'user' => $_ENV['DB_USER'],
@@ -71,6 +71,6 @@ return $config = [
         'folder' => 'layouts',
     ],
     'views' => [
-        'folder' => 'views'
+        'folder' => 'resources/views'
     ],
 ];

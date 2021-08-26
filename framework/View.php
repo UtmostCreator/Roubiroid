@@ -1,8 +1,8 @@
 <?php
 
-namespace App\core;
+namespace Framework;
 
-use modules\DD\DD;
+use Modules\DD;
 
 class View
 {

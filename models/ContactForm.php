@@ -1,12 +1,13 @@
 <?php
 
-namespace app\models;
+namespace models;
 
-use app\core\Model;
+use Framework\Model;
 
 class ContactForm extends Model
 {
     public const SCENARIO_EMAIL = 'test';
+    public const SCENARIO_VISIBLE_ONLY = 'visible_only';
     public string $email = '';
     public string $subject = '';
     public string $body = '';
@@ -37,7 +38,8 @@ class ContactForm extends Model
 //        return [self::SCENARIO_LOGIN => ['logonname', 'password'], self::SCENARIO_REGISTER => ['logonname', 'password'], self::SCENARIO_EDIT => ['logonname', 'role'], // , 'password'
 //        ];
         return [
-            self::SCENARIO_EMAIL => ['email', 'test_prop'], // 'test_prop'
+            self::SCENARIO_VISIBLE_ONLY => ['email', 'subject', 'email'], // 'test_prop'
+            self::SCENARIO_EMAIL => ['email'], // 'test_prop'
         ];
     }
 
@@ -59,5 +61,14 @@ class ContactForm extends Model
     public static function tableName(): string
     {
         // TODO: Implement tableName() method.
+    }
+
+    public function getFillable(): array
+    {
+        return [
+            'email',
+            'subject',
+            'body',
+            'test_prop'];
     }
 }

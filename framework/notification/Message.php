@@ -1,6 +1,6 @@
 <?php
 
-namespace App\core\notification;
+namespace Framework\notification;
 
 class Message
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\DD;
+namespace Modules;
 
 define('ENV', 'DEV');
 /**

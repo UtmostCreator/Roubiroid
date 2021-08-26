@@ -1,12 +1,10 @@
 <?php
 
+namespace App\Http\Controllers;
 
-namespace app\http\controllers;
-
-
-use app\core\Controller;
-use app\core\permission_roubiroid\Permission;
-use app\core\permission_roubiroid\Role;
+use Framework\Controller;
+use Framework\routing\permission_roubiroid\Permission;
+use Framework\routing\permission_roubiroid\Role;
 
 class PermissionController extends Controller
 {

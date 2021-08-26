@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\core;
+namespace Framework;
 
 
 class URL
