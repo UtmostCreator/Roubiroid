@@ -52,7 +52,10 @@ Router::addSystem(400, function () {
 // EXAMPLE:
 //Router::get('URL', [ClassController::class, 'method'])->name('route.name.to.refer');
 //Router::get('/products/{page?}/{name?}/{text?}', [SiteController::class, 'viewProductV2'])->name('product-list');
+// TODO START OF order does matter
+Router::get('/products/list', [SiteController::class, 'listAdvanced'])->name('product-list-adv');
 Router::get('/products/{page}', [SiteController::class, 'viewProductV2'])->name('product-list');
+// TODO END OF order does matter
 //Router::route('product-list', ['page' => 2]);
 /*Router::get('/products/view/', function () {
     $parameters = Router::current()->parameters();

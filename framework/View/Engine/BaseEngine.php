@@ -2,13 +2,17 @@
 
 namespace Framework\View\Engine;
 
+use Framework\View\View;
+
 class BaseEngine implements EngineInterface
 {
-    public function render(string $path, array $data = []): string
-    {
-        $contents = file_get_contents($path);
+    use HasManager;
 
-        foreach ($data as $key => $value) {
+    public function render(View $view): string
+    {
+        $contents = file_get_contents($view->path);
+
+        foreach ($view->data as $key => $value) {
             $contents = str_replace('{' . $key . '}', $value, $contents);
         }
 

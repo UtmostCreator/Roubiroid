@@ -78,4 +78,14 @@ class SiteController extends Controller
 //        DD::dd(Router::current()->parameters());
     }
 
+    public function listAdvanced()
+    {
+        $test = 123;
+        return view('products/list', [
+            'product' => 'test',
+            "test" => $test,
+            'scary' => '<script>alert("boo!")</script>'
+        ]);
+    }
+
 }

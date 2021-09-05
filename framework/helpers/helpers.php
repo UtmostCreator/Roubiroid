@@ -3,6 +3,7 @@
 use Framework\Application;
 use Framework\authentication\AuthManager;
 use Framework\authentication\InterfaceAuthBase;
+use Framework\View\Engine\AdvancedEngine;
 use Framework\View\Engine\BaseEngine;
 use Framework\View\Engine\PhpEngine;
 use Framework\View\Manager;
@@ -103,37 +104,47 @@ if (!function_exists('isGuest')) {
 
 if (!function_exists('base_path')) {
     /**
-     * Get the path to the base of the install.
+     * Get the path root path.
      *
      * @param string $path
      * @return string
      */
-    function base_path($path = '')
+    function base_path($path = ''): string
     {
         return app()->basePath($path);
     }
 }
 
+//defined('BASE_PATH') or define('BASE_PATH', app()->basePath());
+
 if (!function_exists('view')) {
     function view(string $template, array $data): string
     {
+        /* @var Manager $manager*/
         static $manager;
 
         if (!$manager) {
             $manager = new Manager();
 
-            // let's add a pth for our views folder
-            // so the manager knows where to look for view
+            // let's add a pth for our views' folder
+            // so the manager knows where to look for a view
             $manager->addPath(base_path() . '/resources/views');
             // we'll also start adding new engine classes
             // with their expected extensions to be able to pick
             // the appropriate engine for the template
             $manager->addEngine('basic.php', new BaseEngine());
+            $manager->addEngine('advanced.php', new AdvancedEngine());
 
             // must be registered last, because the first extension match is returned
             $manager->addEngine('php', new PhpEngine());
+
+//            $manager->addMacro('escape', [MacrosHelper::class, 'escape']);
+            $manager->addMacro('escape', fn($value) => htmlspecialchars($value));
+            // ... splat operator TODO add comments here
+            $manager->addMacro('includes', fn(...$params) => print view(...$params));
         }
 
-        return $manager->render($template, $data);
+//        return $manager->render($template, $data);
+        return $manager->resolve($template, $data);
     }
 }
