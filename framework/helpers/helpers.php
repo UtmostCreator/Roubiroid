@@ -7,7 +7,10 @@ use Framework\View\Engine\AdvancedEngine;
 use Framework\View\Engine\BaseEngine;
 use Framework\View\Engine\PhpEngine;
 use Framework\View\Manager;
+use Modules\DD;
 
+
+/* ==================================== BASE functions ==================================== */
 if (!function_exists('app')) {
     /**
      * Get app instance.
@@ -16,6 +19,20 @@ if (!function_exists('app')) {
     function app(): Application
     {
         return Application::app();
+    }
+}
+
+//defined('BASE_PATH') || define('BASE_PATH', app()->basePath());
+if (!function_exists('base_path')) {
+    /**
+     * Get the path root path.
+     *
+     * @param string $path
+     * @return string
+     */
+    function base_path($path = ''): string
+    {
+        return app()->basePath($path);
     }
 }
 
@@ -69,6 +86,17 @@ if (!function_exists('auth')) {
     }
 }
 
+if (!function_exists('redirect')) {
+    /**
+     * Get app instance.
+     * @return AuthManager
+     */
+    function redirect(string $url, int $statusCode = 303): void
+    {
+        Application::$app->response->redirect($url);
+    }
+}
+
 if (!function_exists('dd')) {
     /**
      * Get app instance.
@@ -76,10 +104,11 @@ if (!function_exists('dd')) {
      */
     function dd($args)
     {
-        \Modules\DD::dd($args); // AuthManager
+        DD::dd($args); // AuthManager
     }
 }
 
+/* ==================================== AUTHENTICATION - login + password ==================================== */
 if (!function_exists('isAuth')) {
     /**
      * Get app instance.
@@ -101,26 +130,51 @@ if (!function_exists('isGuest')) {
         return Application::isGuest();
     }
 }
-
-if (!function_exists('base_path')) {
+/* ==================================== AUTHENTICATION - login + password ==================================== */
+if (!function_exists('csrf')) {
     /**
-     * Get the path root path.
-     *
-     * @param string $path
-     * @return string
+     * @throws Exception
      */
-    function base_path($path = ''): string
+    function csrf(): string
     {
-        return app()->basePath($path);
+        // bin2hex - Convert binary data into hexadecimal representation
+        // random_bytes - Generates cryptographically secure pseudo-random bytes
+        $_SESSION['token'] = bin2hex(random_bytes(32));
+        return $_SESSION['token'];
     }
 }
 
-//defined('BASE_PATH') or define('BASE_PATH', app()->basePath());
-
-if (!function_exists('view')) {
-    function view(string $template, array $data): string
+/* ==================================== AUTHENTICATION => SECURITY ==================================== */
+if (!function_exists('secure')) {
+    /**
+     * @throws Exception
+     */
+    function secure(): void
     {
-        /* @var Manager $manager*/
+        // hash_equals - Timing attack safe string comparison
+        if (!isset($_POST['csrf']) || !isset($_SESSION['token']) || !hash_equals($_SESSION['token'], $_POST['csrf'])) {
+            throw new Exception('CSRF token mismatch');
+        }
+    }
+}
+if (!function_exists('isDev')) {
+    function isDev(): bool
+    {
+        if (isset($_ENV['APP_ENV']) && in_array($_ENV['APP_ENV'], ['dev', 'LOCAL'])) {
+            return true;
+        }
+
+        return false;
+    }
+}
+
+/* ==================================== ADDITIONAL ==================================== */
+
+/* ==================================== ADDITIONAL => VIE HELPERS ==================================== */
+if (!function_exists('view')) {
+    function view(string $template, array $data = []): string
+    {
+        /* @var Manager $manager */
         static $manager;
 
         if (!$manager) {
@@ -132,8 +186,9 @@ if (!function_exists('view')) {
             // we'll also start adding new engine classes
             // with their expected extensions to be able to pick
             // the appropriate engine for the template
-            $manager->addEngine('basic.php', new BaseEngine());
+            // TODO add priority to engines
             $manager->addEngine('advanced.php', new AdvancedEngine());
+            $manager->addEngine('basic.php', new BaseEngine());
 
             // must be registered last, because the first extension match is returned
             $manager->addEngine('php', new PhpEngine());

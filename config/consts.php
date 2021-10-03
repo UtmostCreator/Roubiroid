@@ -1,7 +1,4 @@
 <?php
 
-/**
- * @var String CONST SERVER_TYPE this can be either "LOCAL" or "REMOTE"
- */
-define("SERVER_TYPE", "LOCAL");
-define("REMOTE_PROJECT_LOC", "accounts/system/");
+defined('ASSET_URL') || define('ASSET_URL', $_ENV['ASSET_URL']);
+defined('HOST_BASE') || define('HOST_BASE', $_SERVER['SERVER_NAME']);

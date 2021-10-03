@@ -1,11 +1,9 @@
 <?php
 
-require_once 'consts.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
+require_once './../config/consts.php';
 
-defined('ASSET_URL') ?: define('ASSET_URL', $_ENV['ASSET_URL']);
-defined('HOST_BASE') ?: define('HOST_BASE', $_SERVER['SERVER_NAME']);
 //\Modules\DD\DD::dd(ASSET_URL);
 return $config = [
     /*

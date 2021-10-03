@@ -50,19 +50,18 @@ class Manager
      * @param string $template path to a view file
      * @param array $data data to be passed/rendered in view
      * @return View object that contains data and path to view (template)
-     * @throws \Exception
      */
     public function resolve(string $template, array $data): View
     {
         foreach ($this->engines as $extension => $engine) {
             foreach ($this->paths as $path) {
-                $file = "{$path}/{$template}.{$extension}";
+                $file = sprintf("%s/%s.%s", $path, $template, $extension);
                 if (is_file($file) && !is_dir($file)) {
                     return new View($engine, realpath($file), $data);
                 }
             }
         }
-        throw new \Exception("Could not resolve '{$template}'");
+        throw new \InvalidArgumentException("Could not resolve '{$template}'");
     }
 
     public function addMacro(string $name, Closure $closure): self

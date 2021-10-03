@@ -34,7 +34,7 @@ class Database
 
         /** throw exceptions */
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        if (SERVER_TYPE === 'LOCAL') {
+        if ($_ENV['APP_ENV'] === 'LOCAL') {
             $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
         }
     }

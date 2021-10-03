@@ -1,15 +1,20 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CsrfExampleProtectionController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\SiteController;
 use Framework\exceptions\NotFoundException;
 use Framework\routing\Router;
-use App\Http\Controllers\SiteController;
-use Framework\PointTo;
 
 // SYSTEM|DEVELOPMENT ROUTES
+// TODO add possibility for debuggin outputting the error message
+// TODO e.g. if this is called new \InvalidArgumentException('no route with that name "' . $name . '"')
 Router::addSystem(500, function () {
-    throw new Exception('server error');
+    $mainText = 'Please contact your administrator or your developer for further resolution';
+    $noteText = "<span class='error-note'> Please include a steps to reproduce this error; The More info you provide the easier it to resolve</span>";
+    throw new Exception(sprintf("%s<br>%s", $mainText, $noteText));
 });
 
 Router::addSystem(404, function () {
@@ -53,7 +58,13 @@ Router::addSystem(400, function () {
 //Router::get('URL', [ClassController::class, 'method'])->name('route.name.to.refer');
 //Router::get('/products/{page?}/{name?}/{text?}', [SiteController::class, 'viewProductV2'])->name('product-list');
 // TODO START OF order does matter
+Router::get('/csrf/example', [CsrfExampleProtectionController::class, 'handle'])->name('csrf-example');
+Router::post('/csrf/example', [CsrfExampleProtectionController::class, 'handle'])->name('csrf-example');
 Router::get('/products/list', [SiteController::class, 'listAdvanced'])->name('product-list-adv');
+//Router::get('/products-list/{page?}', [ListProductsController::class, 'handle'])->name('list-products');
+//Router::get('/register', [RegisterController::class, 'handle'])->name('register-user');
+Router::get('/register', [AuthController::class, 'register'])->name('register-user');
+Router::post('/register', [RegisterController::class, 'handle'])->name('register-user');
 Router::get('/products/{page}', [SiteController::class, 'viewProductV2'])->name('product-list');
 // TODO END OF order does matter
 //Router::route('product-list', ['page' => 2]);
@@ -67,8 +78,8 @@ Router::post('/contact', [SiteController::class, 'contact']);
 Router::get('/clear-persistent-flashes', [SiteController::class, 'clearPersistentFlashes']);
 Router::get('/login', [AuthController::class, 'login']);
 Router::post('/login', [AuthController::class, 'login']);
-Router::get('/register', [AuthController::class, 'register']);
-Router::post('/register', [AuthController::class, 'register']);
+//Router::get('/register', [AuthController::class, 'register']);
+//Router::post('/register', [AuthController::class, 'register']);
 Router::post('/logout', [AuthController::class, 'logout']);
 Router::get('/profile', [AuthController::class, 'profile']);
 

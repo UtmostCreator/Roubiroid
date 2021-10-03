@@ -8,6 +8,7 @@ namespace Framework;
  * @author Roman Zakhriapa <utmostcreator@gmail.com>
  * @package Framework
  */
+// TODO REWRITE it completely
 class Logger
 {
     protected Session $session;

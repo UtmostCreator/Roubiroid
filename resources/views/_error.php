@@ -53,7 +53,7 @@ $displayedMessage = $exception->getCode() . ' — ' . $exception->getMessage();
         }
 
         .error__code {
-            font-size: 20rem;
+            font-size: 8rem;
             border-bottom: 2rem solid #a73beb;
             width: min-content;
             margin: 0 auto;
@@ -62,9 +62,17 @@ $displayedMessage = $exception->getCode() . ' — ' . $exception->getMessage();
         }
 
         .error__description {
-            font-size: 4rem;
+            font-weight: normal;
+            line-height: 2.5rem;
+            font-size: 2rem;
             max-width: 90%;
             margin: 0 auto;
+        }
+
+        .error__description .error-note {
+            font-size: 1.4rem;
+            line-height: 0.5rem;
+            color: #817f7f;
         }
 
         .block {
@@ -81,12 +89,16 @@ $displayedMessage = $exception->getCode() . ' — ' . $exception->getMessage();
         }
 
         @media (max-width: 768px) {
+            main.error {
+                display: block;
+            }
+
             .error__image {
                 display: none;
             }
 
             .error__code {
-                font-size: 15rem;
+                font-size: 7rem;
             }
         }
     </style>
@@ -97,10 +109,12 @@ $displayedMessage = $exception->getCode() . ' — ' . $exception->getMessage();
     <div class="block">
         <div>
 
-            <h1 class="h3 mb-3 fw-normal error__code"><?= $exception->getCode() === 0 ? "Error" : $exception->getCode();  ?></h1>
+            <h1 class="h3 mb-3 fw-normal error__code"><?= $exception->getCode() === 0 ? "Server Error" : $exception->getCode();  ?></h1>
             <p class="error__description"><?= $exception->getMessage() ?></p>
-<!--            <p class="error__description">--><?//= $exception->getFile() ?><!--</p>-->
-<!--            <p class="error__description">--><?//= $exception->getLine() ?><!--</p>-->
+            <?php if (isDev()) : ?>
+                <p class="error__description"><?= $exception->getFile() ?></p>
+                <p class="error__description">ON Line: <?= $exception->getLine() ?></p>
+            <?php endif; ?>
 
         </div>
         <?php if ($exception->getCode() === 403) : ?>

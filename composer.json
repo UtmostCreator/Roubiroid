@@ -22,7 +22,8 @@
   },
   "require": {
     "ext-pdo": "*",
-    "vlucas/phpdotenv": "^5.3"
+    "vlucas/phpdotenv": "^5.3",
+    "filp/whoops": "^2.14.3"
   },
   "config": {
     "_comment": "Unless we set the config.process-timeout property, our Composer scripts\nwill terminate after 300 seconds. A longer timeout, or no timeout at all, benefits us\nbecause our development server will continue running as long as we need it to run.\nEverything we run, using composer run x, must obey this timeout.",

@@ -30,7 +30,7 @@ class Response
         exit;
     }
 
-    public function redirect(string $url, $statusCode = 303): void
+    public function redirect(string $url, int $statusCode = 303): void
     {
 //        DD::dd($statusCode);
         switch ($url) {

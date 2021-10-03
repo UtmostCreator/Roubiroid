@@ -20,10 +20,9 @@ use Framework\PointTo;
 </head>
 <body>
 <div class="container">
+    AUTH layout
     <?php require_once PointTo::views('notification/notification.php'); ?>
-    <?php
-    print $contents;
-    ?>
+    {!! $contents !!}
 </div>
 
 <!-- Optional JavaScript; choose one of the two! -->

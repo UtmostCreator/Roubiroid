@@ -8,13 +8,14 @@ use Framework\middlewares\AuthMiddleware;
 use Framework\middlewares\BaseMiddleware;
 use Framework\Request;
 use Framework\Response;
+use Framework\validation\ValidationException;
 use Modules\DD;
 
 class Router
 {
     public Request $request;
     public Response $response;
-    protected Route $activeRoute;
+    protected ?Route $activeRoute = null;
     protected static ?Router $instance = null;
     private static array $rules = [];
     protected static array $routes = [];
@@ -38,11 +39,11 @@ class Router
 
     public static function getInstance(Request $request, Response $response): Router
     {
-        if (is_null(self::$instance)) {
-            return new self($request, $response);
+        if (is_null(static::$instance)) {
+            return static::$instance = new static($request, $response);
         }
 
-        return self::$instance;
+        return static::$instance;
     }
 
     /**
@@ -61,6 +62,10 @@ class Router
         return static::addNew(__FUNCTION__, $path, $callback);
     }
 
+    /* @description is designed for pages like 404, 403, 400, 500...
+     * as they must be independent of other routes
+     * may be rename it to "errorHandler"?
+     */
     public static function addSystem(string $path, \Closure $method): void
     {
         // protected array $errorHandler = []; add to class and save these routes there!
@@ -158,10 +163,11 @@ class Router
         }
     }
 
+    /* TODO to be removed - unused */
     public static function middleware(string $string)
     {
 
-        return app()->router;
+//        return app()->router;
     }
 
     private static function checkIfRouteAlreadyAdded(string $method, string $path)
@@ -181,8 +187,6 @@ class Router
             if ($route->name() !== $name) {
                 continue;
             }
-
-//            DD::dd($route);
 
             $finds = [];
             $replaces = [];
@@ -212,12 +216,12 @@ class Router
             // parameter hasn't been provided...
             return $path;
         }
-        throw new \Exception('no route with that name "' . $name . '"');
+        throw new \InvalidArgumentException('no route with that name "' . $name . '"');
     }
 
     public function resolve()
     {
-        $this->detectAndSetCurrentCallback();
+        $this->setCurrentActiveRoute();
         return $this->resolveController();
     }
 
@@ -230,7 +234,7 @@ class Router
     /**
      * @return false|mixed
      */
-    private function detectAndSetCurrentCallback(): void
+    private function setCurrentActiveRoute(): void
     {
         $path = $this->request->getPath();
         $method = $this->request->getMethod();
@@ -241,10 +245,12 @@ class Router
 //            throw new NotFoundException();
         }
         $this->activeRoute = $callback;
+//        DD::dl($this->activeRoute);
     }
 
     /**
      * @return false|mixed
+     * @throws \Throwable
      */
     private function resolveController()
     {
@@ -266,15 +272,28 @@ class Router
         // e.g. public function login(Request $request, Response $response)
         // move to route method called dispatch
         try {
+            // TODO check if $whoops->pushHandler(new PrettyPageHandler()); can be placed here
             return $this->dispatch([$controller, $controller->action], [$this->request, $this->response]);
-        } catch (\Throwable $t) {
-            // this action could be thrown and exception
+        } catch (\Throwable $e) {
+            if ($e instanceof ValidationException) {
+                $_SESSION['errors'] = $e->getErrors();
+                return redirect('back');
+            }
+            // this action could be thrown and exception,
             // so we catch it and display the global error
             // page that we will define in the routes file
-            if (SERVER_TYPE === 'LOCAL') {
-                throw new \Exception($t->getMessage() . "<br/>" . $t->getFile());
+//            DD::dd($_ENV['APP_ENV']);
+//            if (isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === 'dev') {
+//                $whoops = new Run();
+//                $whoops->pushHandler(new PrettyPageHandler());
+//                $whoops->register();
+//                throw $e;
+////                throw new \Exception($t->getMessage() . "<br/>" . $t->getFile());
+//            }
+            if (isDev()) {
+                throw $e;
             }
-            return $this->dispatchError();
+            return $this->dispatchError(); // TODO check if $e needs to be passed there
         }
     }
 
@@ -321,11 +340,10 @@ class Router
         return (static::$routes[500])();
     }
 
-    public static function getActiveRoute(): ?Route
+    public static function getActiveRoute(): Route
     {
-        return self::$instance->activeRoute;
+        return static::$instance->activeRoute;
     }
-
     /**
      * Define your route model bindings, pattern filters, etc.
      *

@@ -5,6 +5,7 @@ namespace Framework\View\form\elements;
 use Framework\helpers\StringHelper;
 use Framework\Model;
 use Exception;
+use Modules\DD;
 
 abstract class Field
 {
@@ -12,14 +13,14 @@ abstract class Field
     protected const SINGLE_LINE_OPTIONS = [
         'required', 'checked', 'selected'
     ];
-    protected const ADDITIONAL_OPTIONS = ['note'];
-    protected const ALLOWED_OPTIONS = [
-        ...self::SINGLE_LINE_OPTIONS,
-        ...self::ADDITIONAL_OPTIONS,
-        'type', 'value', 'placeholder', 'class', 'disabled', 'name', 'id', 'style',
-        'autocomplete', 'accept', 'showImagePreview', 'pattern',
-        'data-date-format', 'data-on', 'data-off', 'data-size'
-    ];
+//    protected const ADDITIONAL_OPTIONS = ['note'];
+//    protected const ALLOWED_OPTIONS = [
+//        ...self::SINGLE_LINE_OPTIONS,
+//        ...self::ADDITIONAL_OPTIONS,
+//        'type', 'value', 'placeholder', 'class', 'disabled', 'name', 'id', 'style',
+//        'autocomplete', 'accept', 'showImagePreview', 'pattern',
+//        'data-date-format', 'data-on', 'data-off', 'data-size'
+//    ];
 
     protected const HIDE_NOTE_ON_ERROR = true;
     protected const IS_BROWSER_REQUIRED = false;
@@ -54,6 +55,7 @@ abstract class Field
         $this->type = '';
         $this->label = '';
         $this->required = '';
+
         try {
             $this->generalCheckIsValid($model, $fieldName, $options);
         } catch (Exception $e) {
@@ -70,6 +72,7 @@ abstract class Field
     // TODO add extra icon
     public function __toString(): string
     {
+        $classes = implode(' ', [$this->wrapperSizeClass, self::DEFAULT_WRAPPER_CLASS]);
         return sprintf(
             '
             <div class="%s">
@@ -78,7 +81,7 @@ abstract class Field
                 %s
             </div>
         ',
-            implode(' ', [$this->wrapperSizeClass, self::DEFAULT_WRAPPER_CLASS]),
+            $classes,
             $this->label,
             $this->getField(),
             $this->note(),
@@ -123,20 +126,12 @@ abstract class Field
             }
         } catch (Exception $exception) {
         }
-
-        try {
-            if (!is_array($options)) {
-                $response = sprintf('Allowed options ("%s")', implode('", "', self::ALLOWED_OPTIONS));
-                throw new \InvalidArgumentException($response);
-            }
-        } catch (Exception $exception) {
-        }
     }
 
     protected function prepareOptions(): void
     {
         $this->options['name'] = $this->attribute;
-        $this->options = $this->options + array_fill_keys(self::ALLOWED_OPTIONS, '');
+//        $this->options = $this->options + array_fill_keys(self::ALLOWED_OPTIONS, '');
         $this->options = array_map(function ($value) {
             if (is_string($value) || is_bool($value)) {
                 return $value === "" ? null : $value;
@@ -191,6 +186,7 @@ abstract class Field
     protected function getDefaultOptionValue()
     {
         if (empty($this->model->{$this->attribute})) {
+            $this->options['value'] ??= '';
             return $this->options['value'];
         }
         if (is_object($this->model->{$this->attribute})) {
@@ -204,10 +200,6 @@ abstract class Field
         $this->options = array_filter($this->options);
         foreach ($this->options as $key => $value) {
             if (is_object($value)) {
-                continue;
-            }
-
-            if (in_array($key, self::ADDITIONAL_OPTIONS)) {
                 continue;
             }
 

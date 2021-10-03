@@ -11,10 +11,10 @@ class Input extends Field
     public const TEXT = 'text';
     public const EMAIL = 'email';
     public const PASSWORD = 'password';
-    protected const ALLOWED_OPTIONS = [
-        ...parent::ALLOWED_OPTIONS,
-        'size'
-    ];
+//    protected const ALLOWED_OPTIONS = [
+//        ...parent::ALLOWED_OPTIONS,
+//        'size'
+//    ];
 
     // DEFAULT SETTINGS:
     protected const DEFAULT_TYPE = self::TEXT;

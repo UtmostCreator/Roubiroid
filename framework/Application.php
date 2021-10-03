@@ -30,6 +30,7 @@ class Application
     {
     }
 
+    // TODO maybe rename this method to run?
     public static function create(string $rootPath, array $config)
     {
         $app = new self();

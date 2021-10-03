@@ -3,21 +3,25 @@
 namespace Framework;
 
 use Framework\middlewares\BaseMiddleware;
+use Framework\routing\Router;
 
 class Controller
 {
-    public View $view;
+//    public View $view; // 1st time, then overridden using a better way
     public string $action = '';
     /**
      * @var array of BaseMiddleware objects
      */
     protected array $middlewares = [];
     public string $layout = 'main';
+    // TODO check if needed
+    public Router $router;
 
     public function __construct()
     {
-        Session::initIfItDoesNotExist();
-        $this->view = new View();
+        $this->router = Application::app()->router;
+//        Session::initIfItDoesNotExist();
+//        $this->view = new View(); // 1st time, then overridden using a better way
     }
 
     public function render($view, $params = [])

@@ -45,7 +45,7 @@ class ArrayHelper
      * @param int $offset
      * @return bool|int
      */
-    public static function arrGetEncounteredItemPos($haystack, $needle, $offset = 0): int
+    public static function getEncounteredItemPos($haystack, $needle, $offset = 0): int
     {
         if (!is_array($needle)) {
             $needle = array($needle);
@@ -83,5 +83,15 @@ class ArrayHelper
             unset($arr[$key]);
         }
         return $arr;
+    }
+
+    // add alias getSelectOptions | prepareForDropdown
+    public static function getIdValueArray(array $array, string $lookedID = 'id', string $lookedName = 'name')
+    {
+        if (empty($array)) {
+            return [];
+        }
+
+        return array_combine(array_column($array, $lookedID), array_column($array, $lookedName));
     }
 }

@@ -1,13 +1,12 @@
 <?php
 
-namespace App\core;
+namespace Framework;
 
-use App\core\helpers\ArrayHelper;
-use App\core\helpers\Sanitizer;
-use App\core\helpers\StringHelper;
-use App\core\db\Query;
-use App\core\notification\Message;
-use modules\DD\DD;
+use Framework\helpers\ArrayHelper;
+use Framework\helpers\Sanitizer;
+use Framework\helpers\StringHelper;
+use Framework\db\Query;
+use Framework\notification\Message;
 
 abstract class Model
 {
