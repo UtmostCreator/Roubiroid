@@ -1,3 +1,6 @@
+<pre>
 <?php
-\Modules\DD::dd($users);
+var_dump($users);
 // would be for an advanced variable string
+?>
+</pre>

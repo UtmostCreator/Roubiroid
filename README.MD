@@ -10,6 +10,9 @@ MUST DO:
 - receive the HTTP requests;
 - send back a response to browser.
 
+### DB:
+- only in dev | LOCAL environment you will see DB error!
+
 ## Model
 #### Naming conventions:
 - thing(singular) => "Product" + Model 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CreateNewDbConnectionController;
 use App\Http\Controllers\CsrfExampleProtectionController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RegisterController;
@@ -58,8 +59,12 @@ Router::addSystem(400, function () {
 //Router::get('URL', [ClassController::class, 'method'])->name('route.name.to.refer');
 //Router::get('/products/{page?}/{name?}/{text?}', [SiteController::class, 'viewProductV2'])->name('product-list');
 // TODO START OF order does matter
+// ROUTES for testing:
+Router::get('/select-users', [CreateNewDbConnectionController::class, 'handle'])->name('select-users');
 Router::get('/csrf/example', [CsrfExampleProtectionController::class, 'handle'])->name('csrf-example');
 Router::post('/csrf/example', [CsrfExampleProtectionController::class, 'handle'])->name('csrf-example');
+
+
 Router::get('/products/list', [SiteController::class, 'listAdvanced'])->name('product-list-adv');
 //Router::get('/products-list/{page?}', [ListProductsController::class, 'handle'])->name('list-products');
 //Router::get('/register', [RegisterController::class, 'handle'])->name('register-user');
