@@ -1,6 +1,6 @@
 <?php
 
-use Framework\PointTo;
+use Framework\Paths;
 
 ?>
 <!doctype html>
@@ -21,7 +21,7 @@ use Framework\PointTo;
 <body>
 <div class="container">
     AUTH layout
-    <?php require_once PointTo::views('notification/notification.php'); ?>
+    <?php require_once Paths::views('notification/notification.php'); ?>
     {!! $contents !!}
 </div>
 

@@ -3,7 +3,7 @@
 namespace Framework\View\Engine;
 
 use Framework\helpers\FileHelper;
-use Framework\PointTo;
+use Framework\Paths;
 use Framework\View\View;
 use Modules\DD;
 

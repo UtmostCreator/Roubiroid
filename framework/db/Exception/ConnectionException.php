@@ -1,9 +1,10 @@
 <?php
 
-namespace Framework\db\exception;
+namespace Framework\db\Exception;
 
-class QueryException extends \PDOException
+class ConnectionException extends \PDOException
 {
+
     public function __construct(string $msg) //  int $code, string $file, int $line
     {
         parent::__construct($msg);

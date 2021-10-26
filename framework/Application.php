@@ -6,6 +6,7 @@ use Framework\authentication\AuthManager;
 use Framework\authentication\InterfaceAuthBase;
 use Framework\db\Database;
 use Framework\routing\Router;
+use Modules\DD;
 
 class Application
 {
@@ -30,12 +31,13 @@ class Application
     {
     }
 
-    // TODO maybe rename this method to run?
+    // TODO maybe rename this method to run - no run is used at the end of a file index.php or command.php?
     public static function create(string $rootPath, array $config)
     {
         $app = new self();
         static::$config = $config;
         $app->userClass = $config['userClass'] ?? '';
+        // TODO check and removed if unused
         $app->layout = $config['layout']['value'] ?? '';
         static::$ROOT_DIR = $rootPath;
         static::$PUBLIC = __DIR__;
@@ -126,6 +128,12 @@ class Application
 
     public function basePath($path = ''): string
     {
-        return realpath(PointTo::getBase() . $path);
+//        return realpath(Paths::getBase() . $path);
+        return Application::$ROOT_DIR;
+    }
+
+    public function add($param)
+    {
+
     }
 }

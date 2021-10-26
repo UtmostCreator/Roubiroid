@@ -1,6 +1,6 @@
 <?php
 
-use Framework\db\migration\IMigration;
+use Framework\db\Migration\IMigration;
 
 class m24062021_175722_permissions_table implements IMigration
 {

@@ -33,7 +33,7 @@ trait HasRelationships
         }
 
         // Once we have the foreign key names, we'll just create a new Eloquent query
-        // for the related models and returns the relationship instance which will
+        // for the related Models and returns the relationship instance which will
         // actually be responsible for retrieving and hydrating every relations.
         $ownerKey = $ownerKey ?: $instance->getKeyName();
 

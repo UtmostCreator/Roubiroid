@@ -2,11 +2,21 @@
 
 namespace Framework;
 
-class PointTo
+use Modules\DD;
+
+class Paths
 {
+    protected static $INDEX_FILE_LOCATION = '';
+
+    public static function setBase($newRoot): void
+    {
+        self::$INDEX_FILE_LOCATION = $newRoot;
+    }
+
     public static function getBase(): string
     {
-        return '../';
+        self::$INDEX_FILE_LOCATION = dirname(__FILE__, 2) . '/';
+        return self::$INDEX_FILE_LOCATION;
     }
 
     public static function views($path): string

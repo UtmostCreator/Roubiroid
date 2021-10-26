@@ -2,7 +2,8 @@
 
 namespace Framework\db\Connection;
 
-use Framework\db\exception\ConnectionException;
+use Framework\db\Exception\ConnectionException;
+use Framework\db\Migration\MysqlMigration;
 use Framework\db\QueryBuilder\MysqlQueryBuilder;
 use Modules\DD;
 use PDO;
@@ -10,6 +11,7 @@ use PDO;
 class MysqlConnection extends Connection
 {
     private PDO $pdo;
+    private string $database;
 
     /**
      * @param $config
@@ -27,6 +29,8 @@ class MysqlConnection extends Connection
         if (empty($host) || empty($database) || empty($username)) {
             throw new \InvalidArgumentException('Connection incorrectly configured');
         }
+
+        $this->database = $database;
 
         $dsn = sprintf("mysql:host=%s;port=%s;dbname=%s;charset=utf8", $host, $port, $database);
 //        DD::dd($dsn);
@@ -71,5 +75,51 @@ class MysqlConnection extends Connection
     public function alterTable(string $table): MysqlMigration
     {
         return new MysqlMigration($this, $table, 'alter');
+    }
+
+    public function getTables(): array
+    {
+        $statement = $this->pdo()->prepare('SHOW TABLES');
+        $statement->execute();
+
+        $results = $statement->fetchAll(PDO::FETCH_NUM);
+        $results = array_map(fn($result) => $result[0], $results);
+
+        return $results;
+    }
+
+    public function hasTable(string $name): bool
+    {
+        $tables = $this->getTables();
+        return in_array($name, $tables);
+    }
+
+    public function dropTables(): int
+    {
+        // generate an array of "DROP TABLE IF EXISTS `users`" rows
+        $statement = $this->pdo->prepare("
+            SELECT CONCAT('DROP TABLE IF EXISTS `', table_name, '`')
+            FROM information_schema.tables
+            WHERE table_schema = '{$this->database}';
+        ");
+
+        $statement->execute();
+
+        $dropTableClauses = $statement->fetchAll(PDO::FETCH_NUM);
+        // TODO migration
+//        DD::dd($dropTableClauses);
+        $dropTableClauses = array_map(fn($result) => $result[0], $dropTableClauses);
+        // TODO get table names from migration table and only remove them.
+
+        $clauses = [
+            'SET FOREIGN_KEY_CHECKS = 0',
+            ...$dropTableClauses,
+            'SET FOREIGN_KEY_CHECKS = 1',
+        ];
+//        DD::dd(join(';', $clauses) . ';');
+
+        $statement = $this->pdo->prepare(join(';', $clauses) . ';');
+
+        return $statement->execute();
     }
 }

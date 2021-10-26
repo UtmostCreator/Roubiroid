@@ -2,6 +2,7 @@
 
 namespace Framework;
 
+use Framework\db\Connection\Connection;
 use Framework\helpers\ArrayHelper;
 use Framework\helpers\Sanitizer;
 use Framework\helpers\StringHelper;
@@ -26,11 +27,12 @@ abstract class Model
     public const RULE_DEFAULT_VALUE = 'default_value';
     public const RULE_UNIQUE_TOO_SHORT = 'unique_too_short';
     public const MIN_VALUE_TO_CHECK_UNIQUENESS = 3;
-    /**
-     * @var string|null
-     */
+
     public ?int $id = -1;
     public ?string $scenario = null;
+
+    protected Connection $connection;
+
     private ?array $skippedFields = [];
     private ?Model $oldObject;
     private array $dirty = [];

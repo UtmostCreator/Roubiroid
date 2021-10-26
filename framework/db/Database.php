@@ -5,7 +5,7 @@ namespace Framework\db;
 use Framework\helpers\ArrayHelper;
 use Framework\helpers\FileHelper;
 use Framework\Application;
-use Framework\db\migration\AbstractMigration;
+use Framework\db\Migration\AbstractMigration;
 use Framework\Logger;
 use PDO;
 

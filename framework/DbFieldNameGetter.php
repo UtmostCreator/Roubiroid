@@ -2,6 +2,7 @@
 
 namespace Framework;
 
+// TODO REMOVE unused
 class DbFieldNameGetter extends BaseObject
 {
     public function __get($name)

@@ -1,6 +1,6 @@
 <?php
 
-use Framework\db\migration\IMigration;
+use Framework\db\Migration\IMigration;
 
 class m24062021_175222_roles_table implements IMigration
 {

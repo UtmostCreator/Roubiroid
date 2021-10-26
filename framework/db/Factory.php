@@ -4,7 +4,8 @@ namespace Framework\db;
 
 use Closure;
 use Framework\db\Connection\Connection;
-use Framework\db\exception\ConnectionException;
+use Framework\db\Exception\ConnectionException;
+use Modules\DD;
 
 class Factory
 {
@@ -18,11 +19,12 @@ class Factory
 
     public function connect(array $config): Connection
     {
-        if (!isset($config['type'])) {
+        // TODO replace type with only driver
+        if (!isset($config['driver'])) {
             throw new ConnectionException('type is not defined');
         }
 
-        $type = $config['type'];
+        $type = $config['driver'];
 
         if (isset($this->connectors[$type])) {
             return $this->connectors[$type]($config);

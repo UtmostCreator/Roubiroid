@@ -3,6 +3,7 @@
 use Framework\Application;
 use Framework\authentication\AuthManager;
 use Framework\authentication\InterfaceAuthBase;
+use Framework\Paths;
 use Framework\View\Engine\AdvancedEngine;
 use Framework\View\Engine\BaseEngine;
 use Framework\View\Engine\PhpEngine;
@@ -26,13 +27,18 @@ if (!function_exists('app')) {
 if (!function_exists('base_path')) {
     /**
      * Get the path root path.
-     *
+     * TODO maybe rename to basePath()
      * @param string $path
+     * @param bool $console
      * @return string
      */
-    function base_path($path = ''): string
+    function base_path(string $path = '', bool $console = false): string
     {
-        return app()->basePath($path);
+        if (!$console) {
+            return app()->basePath($path);
+        }
+
+        return Paths::getBase();
     }
 }
 

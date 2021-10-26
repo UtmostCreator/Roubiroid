@@ -1,6 +1,6 @@
 <?php
 
-use Framework\db\migration\IMigration;
+use Framework\db\Migration\IMigration;
 
 class m27062021_133255_failed_jobs_table implements IMigration
 {

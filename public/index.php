@@ -1,6 +1,7 @@
 <?php
 
 use Framework\Application;
+use Framework\helpers\Config;
 use Framework\Logger;
 use Framework\Session;
 use Whoops\Handler\PrettyPageHandler;
@@ -16,7 +17,6 @@ error_reporting(E_ALL);
 /* END of ERROR REPORTING */
 
 require_once __DIR__ . './../vendor/autoload.php';
-$config = require_once './../config/config.php';
 Session::initIfItDoesNotExist(); // TODO move to more specific place
 
 // System logger
@@ -34,7 +34,8 @@ if (isDev()) {
 //                throw new \Exception($t->getMessage() . "<br/>" . $t->getFile());
 }
 
-Application::create(dirname(__DIR__), $config);
+//\Modules\DD::dd(Config::get());
+Application::create(dirname(__DIR__), Config::get());
 $app = Application::getInstance();
 //(new \Framework\db\Query())->insert('users', ['email', 'firstname', 'lastname', 'status', 'password',],
 //    ['email@gmail.com', 'fadsfasd', 'adsfasdfasdf', '1', 'sdfasdfasdd']);
