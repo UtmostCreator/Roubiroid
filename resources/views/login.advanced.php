@@ -5,15 +5,17 @@ use models\User;
 
 //\Modules\DD\DD::dd($_SERVER); //phpinfo()
 /** @var User $model */
+/** @var string $logInAction */
 /** @var \Framework\View $this */
 $this->title = 'Login';
 ?>
 @extends('layouts/auth')
 <?php
-$form = Form::begin('', 'post', ['enctype' => Form::ENCTYPE_DEFAULT, 'class' => 'custom-class']); ?>
+$form = Form::begin($logInAction, 'post', ['enctype' => Form::ENCTYPE_DEFAULT, 'class' => 'custom-class']); ?>
+<input type="hidden" name="csrf" value="{{ $csrf }}" />
 
 
-<h1>Create an account</h1>
+<h1>Please Login</h1>
 
 <?= $form->input($model, 'email', [
     'type' => 'email',

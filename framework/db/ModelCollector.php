@@ -31,7 +31,7 @@ class ModelCollector
 
     public function first()
     {
-        /** @var NewModel $class */
+        /** @var BaseActiveRecord $class */
         $class = $this->class;
 
         $row = $this->builder->first();
@@ -45,7 +45,7 @@ class ModelCollector
 
     public function all()
     {
-        /** @var NewModel $class */
+        /** @var BaseActiveRecord $class */
         $class = $this->class;
 
         $rows = $this->builder->all();

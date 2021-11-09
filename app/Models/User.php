@@ -2,12 +2,15 @@
 
 namespace models;
 
+use App\Models\Order;
 use Framework\routing\permission_roubiroid\HasRoles;
 use Framework\UserModel;
 
 class User extends UserModel
 {
     use HasRoles;
+
+    public string $table = 'users';
 
     protected $guard_name = 'web';
 
@@ -19,18 +22,20 @@ class User extends UserModel
     public const ROLE_USER = 3;
     public const ROLE_GUEST = 0;
 
-    public string $firstname = '';
-    public string $lastname = '';
-    public string $email = '';
-    public string $password = '';
-    public int $status = self::ACTIVE_STATUS;
-    public string $confirmPassword = '';
+//    public string $table = 'users';
+//    public string $firstname = '';
+//    public string $lastname = '';
+//    public string $email = '';
+//    public string $password = '';
+//    public int $status = self::ACTIVE_STATUS;
+//    public string $confirmPassword = '';
 
     /**
      * RegisterModel constructor.
      */
     public function __construct()
     {
+        parent::__construct();
     }
 
     public static function tableName(): string
@@ -47,19 +52,33 @@ class User extends UserModel
     {
         return [
             'firstname' => [self::RULE_REQUIRED],
-            'lastname' => [self::RULE_REQUIRED],
+//             ['firstname', 'lastname', [self::RULE_REQUIRED]],
+//            'lastname' => [self::RULE_REQUIRED],
             'email' => [
-                self::RULE_REQUIRED, self::RULE_EMAIL,
+
                 [
                     self::RULE_UNIQUE, 'class' => self::class
                 ]
             ],
             'password' => [self::RULE_REQUIRED, [self::RULES_MIN, 'min' => 8], [self::RULE_MAX, 'max' => 16]],
             'confirmPassword' => [self::RULE_REQUIRED, [self::RULE_MATCH, 'match' => 'password']],
+            'status' => [self::RULE_DEFAULT_VALUE => 1],
         ];
     }
 
-    public static function attributes(): array
+    // TODO remove
+//    public static function attributes(): array
+//    {
+//        return [
+//            'firstname',
+//            'lastname',
+//            'email',
+//            'password',
+//            'status',
+//        ];
+//    }
+
+    public function getFillable(): array
     {
         return [
             'firstname',
@@ -70,12 +89,22 @@ class User extends UserModel
         ];
     }
 
+    public function profile()
+    {
+        return $this->hasOne(Profile::class, 'user_id');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'user_id');
+    }
+
     public function test()
     {
         echo 'TEST in f';
     }
 
-    public function save(): bool
+    public function save(): self
     {
         $pass = password_hash($this->password, PASSWORD_DEFAULT);
         $this->password = is_string($pass) ? $pass : $this->password;

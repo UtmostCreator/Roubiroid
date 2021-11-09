@@ -103,16 +103,16 @@ if (!function_exists('redirect')) {
     }
 }
 
-if (!function_exists('dd')) {
-    /**
-     * Get app instance.
-     * @param mixed $args
-     */
-    function dd($args)
-    {
-        DD::dd($args); // AuthManager
-    }
-}
+//if (!function_exists('dd')) {
+//    /**
+//     * Get app instance.
+//     * @param mixed $args
+//     */
+//    function dd($args)
+//    {
+//        DD::dd($args); // AuthManager
+//    }
+//}
 
 /* ==================================== AUTHENTICATION - login + password ==================================== */
 if (!function_exists('isAuth')) {
@@ -138,9 +138,6 @@ if (!function_exists('isGuest')) {
 }
 /* ==================================== AUTHENTICATION - login + password ==================================== */
 if (!function_exists('csrf')) {
-    /**
-     * @throws Exception
-     */
     function csrf(): string
     {
         // bin2hex - Convert binary data into hexadecimal representation

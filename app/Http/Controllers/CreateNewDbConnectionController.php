@@ -4,13 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\NewUser;
 use Framework\Controller;
-use Framework\db\Connection\MysqlConnection;
-use Framework\db\Connection\SqliteConnection;
-use Framework\db\Factory;
-use Framework\helpers\Config;
 use models\Product;
-use models\Profile;
-use models\User;
 use Modules\DD;
 
 class CreateNewDbConnectionController extends Controller
@@ -35,15 +29,27 @@ class CreateNewDbConnectionController extends Controller
             ->select()
             ->from('users')
             ->all();*/
+
+        $products = Product::all();
+//        DD::dd($products);
+//        dd($products);
+        $productsWithRoutes = array_map(function ($product) {
+            $product->route = $this->router->route('view-product', ['product' => $product->id]);
+            return $product;
+        }, $products);
+//        DD::dd($productsWithRoutes);
+
+
         $users = NewUser::all();
 
         $user = NewUser::where('id', 15);
         $user->delete();
-        DD::dd($users);
+//        DD::dd($users);
 
         return view('db-example-query', [
             'number' => 42,
             'users' => $users,
+            'products' => $products,
         ]);
     }
 }

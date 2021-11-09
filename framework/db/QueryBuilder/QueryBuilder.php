@@ -3,6 +3,7 @@
 namespace Framework\db\QueryBuilder;
 
 use Framework\db\Exception\QueryException;
+use Framework\db\Query;
 use Modules\DD;
 
 abstract class QueryBuilder
@@ -32,6 +33,10 @@ abstract class QueryBuilder
             $query = $this->compileSelect($query);
             $query = $this->compileWheres($query);
             $query = $this->compileLimit($query);
+            if (empty($this->orderBy)) {
+                $this->orderBy();
+            }
+            $query = $this->compileOrderBy($query);
         }
 
         if ($this->type === self::TYPE_INSERT) {
@@ -56,6 +61,17 @@ abstract class QueryBuilder
         return $this->connection->pdo()->prepare($query);
     }
 
+    public function executeQuery(string $query)
+    {
+
+        if (empty($query)) {
+            throw new QueryException('Unrecognised query type');
+        }
+
+        // TODO add query logger class (to show later all requests)
+        return $this->connection->pdo()->prepare($query);
+    }
+
     /**
      * Indicate the query type is a "select" and remember
      * which fields should be returned by the query
@@ -65,7 +81,8 @@ abstract class QueryBuilder
     public function select($columns = '*'): self
     {
         if (is_string($columns)) {
-            $columns = [$columns];
+//            $columns = [$columns];
+            $columns = explode(', ', $columns);
         }
 
         $this->type = self::TYPE_SELECT;
@@ -156,6 +173,7 @@ abstract class QueryBuilder
         }
 
         $statement = $this->prepare();
+//        DD::dd($statement);
 //        $statement->execute($this->getWhereValues());
         $statement->execute($this->getWhereValues());
 

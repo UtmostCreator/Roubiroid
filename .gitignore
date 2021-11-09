@@ -1,3 +1,4 @@
 vendor
+storage/framework/views
 .idea
 .env

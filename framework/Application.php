@@ -78,21 +78,28 @@ class Application
         return self::app();
     }
 
+    public static function getDb()
+    {
+        return self::app()->db;
+    }
+
     public function run()
     {
-        try {
-            echo $this->router->resolve();
-        } catch (\Exception $e) {
-            $statusCode = is_int($e->getCode()) ? $e->getCode() : 500;
-            Application::$app->response->setStatusCode($statusCode);
-//            dd($e);
-            echo $this->view->renderOnlyView(
-                '_error',
-                [
-                    'exception' => $e
-                ]
-            );
-        }
+        $page = $this->router->resolve();
+        echo $page;
+//        try {
+//            echo $this->router->resolve();
+//        } catch (\Exception $e) {
+//            $statusCode = is_int($e->getCode()) ? $e->getCode() : 500;
+//            Application::$app->response->setStatusCode($statusCode);
+////            dd($e);
+//            echo $this->view->renderOnlyView(
+//                '_error',
+//                [
+//                    'exception' => $e
+//                ]
+//            );
+//        }
     }
 
     // TODO check if can be improved

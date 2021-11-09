@@ -18,7 +18,7 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . './../vendor/autoload.php';
 Session::initIfItDoesNotExist(); // TODO move to more specific place
-
+Config::init();
 // System logger
 $logger = Logger::getInst();
 // System Error Handler

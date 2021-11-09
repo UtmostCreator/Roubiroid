@@ -8,7 +8,7 @@ use Framework\db\Connection\SqliteConnection;
 use Framework\helpers\Config;
 use Modules\DD;
 
-abstract class NewModel
+abstract class BaseActiveRecord
 {
     protected Connection $connection;
     protected string $table;
@@ -111,6 +111,11 @@ abstract class NewModel
         }
 
         return $this->table;
+    }
+
+    public function getAttributes()
+    {
+        return $this->attributes;
     }
 
     /**
@@ -222,8 +227,8 @@ abstract class NewModel
      */
     public function hasOne(string $class, string $foreignKey, string $primaryKey = 'id'): Relationship
     {
-        /** @var NewModel $model */
-        /** @var NewModel $class */
+        /** @var BaseActiveRecord $model */
+        /** @var BaseActiveRecord $class */
         $model = new $class();
         $query = $class::query()->from($model->getTable())->where($foreignKey, $this->attributes[$primaryKey]);
 
@@ -238,8 +243,8 @@ abstract class NewModel
      */
     public function hasMany(string $class, string $foreignKey, string $primaryKey = 'id')
     {
-        /** @var NewModel $model */
-        /** @var NewModel $class */
+        /** @var BaseActiveRecord $model */
+        /** @var BaseActiveRecord $class */
         $model = new $class();
         $query = $class::query()->from($model->getTable())->where($foreignKey, $this->attributes[$primaryKey]);
 
@@ -255,8 +260,8 @@ abstract class NewModel
      */
     public function belongsTo(string $class, string $foreignKey, string $primaryKey = 'id')
     {
-        /** @var NewModel $model */
-        /** @var NewModel $class */
+        /** @var BaseActiveRecord $model */
+        /** @var BaseActiveRecord $class */
         $model = new $class();
         $query = $class::query()->from($model->getTable())->where($primaryKey, $this->attributes[$foreignKey]);
 
@@ -267,5 +272,10 @@ abstract class NewModel
     public static function find(int $id): self
     {
         return static::where('id', $id)->first();
+    }
+
+    public function getDb()
+    {
+        return app()->getDb();
     }
 }

@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\NewUser;
+use Framework\Controller;
+use Framework\db\Connection\MysqlConnection;
+use Framework\db\QueryBuilder\QueryBuilder;
+use Framework\Model;
 use models\Product;
 use models\Profile;
 use Modules\DD;
 
-class ExampleController
+class ExampleController extends Controller
 {
 
     public function getSingleProductObject()
@@ -70,5 +74,39 @@ class ExampleController
         $user = NewUser::where('id', 15);
         $user->delete();
         DD::dd($user);
+    }
+
+    public function homePage()
+    {
+//        $products = Product::select('id, name, description')->all();
+        $products = Product::all();
+        return view('home', [
+            'products' => $products,
+        ]);
+    }
+
+    public function selectUsingArray()
+    {
+        $product = Product::query()->select(['name', 'description'])->where('name', 'kkkkkkkk')->first();
+        DD::dd($product->getAttributes());
+    }
+
+    public function selectUsingString()
+    {
+        $product = Product::query()->select('name, description')->where('name', 'kkkkkkkk')->first();
+        DD::dl('selectUsingString');
+        DD::dd($product->getAttributes());
+    }
+
+    // TODO unfinished
+    public function selectWithJoin()
+    {
+        $product = MysqlConnection::getInst()
+            ->query()
+            ->select('name, description')
+            ->where('name', 'kkkkkkkk')
+            ->first();
+        DD::dl('selectUsingString');
+        DD::dd($product->getAttributes());
     }
 }

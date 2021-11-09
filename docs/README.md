@@ -1,6 +1,6 @@
-
-
-
+# Links
+### create a link to a product:
+$this->router->route('order-product', ['product' => $product->id])
 
 
 

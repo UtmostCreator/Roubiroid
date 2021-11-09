@@ -69,6 +69,7 @@ class ContactForm extends Model
             'email',
             'subject',
             'body',
-            'test_prop'];
+            'test_prop'
+        ];
     }
 }

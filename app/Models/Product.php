@@ -2,9 +2,9 @@
 
 namespace models;
 
-use Framework\db\NewModel;
+use Framework\db\BaseActiveRecord;
 
-class Product extends NewModel
+class Product extends BaseActiveRecord
 {
     protected string $table = 'products';
 

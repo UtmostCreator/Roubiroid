@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Framework\db\NewModel;
+use Framework\db\BaseActiveRecord;
 
-class Order extends NewModel
+class Order extends BaseActiveRecord
 {
     protected string $table = 'orders';
 

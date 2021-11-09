@@ -44,4 +44,21 @@ abstract class Connection
      * It is possible to have an in-memory SQLite database
      */
     abstract public function dropTables(): int;
+
+
+    protected static $inst = null;
+
+    public static function setStatic($connection)
+    {
+        self::$inst = $connection;
+    }
+
+    public static function getInst(): self
+    {
+        if (is_null(self::$inst)) {
+            self::$inst = new static();
+        }
+
+        return self::$inst;
+    }
 }

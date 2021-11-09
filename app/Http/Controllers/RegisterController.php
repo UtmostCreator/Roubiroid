@@ -14,17 +14,18 @@ class RegisterController extends Controller
 {
     public string $layout = 'auth';
 
-    public function handle(Request $request)
+    public function handle(Request $request): string
     {
         $user = new User();
 //        Application::$app->session->setFlash(Message::SUCCESS, 'User eRegistration', 'Registered successfully', Message::ADMIN_VISIBLE, false);
 //        Application::$app->session->setFlash(Message::SUCCESS, 'User eRegistration', 'Registered successfully', Message::ADMIN_VISIBLE);
 //        DD::dd($_SESSION);
         if ($request->isPost()) {
-            $user->load($request->getBody());
-
+            $user->loadToAttributes($request->getBody());
+//            $user->validate();
+//            DD::dd($user->validate());
             if ($user->validate() && $user->save()) {
-                Application::$app->session->setFlash(Message::SUCCESS, 'User eRegistration', 'Registered successfully', Message::ADMIN_VISIBLE);
+                Application::$app->session->setFlash(Message::SUCCESS, 'User Registration', 'Registered successfully', Message::ADMIN_VISIBLE);
                 redirect('/');
             }
 

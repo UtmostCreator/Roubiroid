@@ -182,6 +182,9 @@ class Router
      */
     public static function route(string $name, array $parameters = []): string
     {
+        $methodExistIn = self::routeExistIn($name, 'post');
+        $methodExistIn ??= self::routeExistIn($name, 'get');
+        self::$redirectMethod = $methodExistIn;
         self::$redirectMethod ??= self::DEFAULT_REDIRECT_METHOD;
         foreach (self::$routes[self::$redirectMethod] as $route) {
             if ($route->name() !== $name) {
@@ -210,6 +213,11 @@ class Router
             // from this '/products/{page}' '{page}' will be replaced with its value
             // from this '/products/{page?}' '{page?}' will be replaced with its value
             $path = str_replace($finds, $replaces, $path);
+
+            if (strpos($path, '{')) {
+                throw new \Exception('Wrong view or parameters supplied to router');
+            }
+
             // remove any optional parameters not provided
             $path = preg_replace("#{[^}]+}#", '', $path); // from '/products/2{test}{test?}' to '/products/2'
             // TODO we should think about warning if a required
@@ -217,6 +225,11 @@ class Router
             return $path;
         }
         throw new \InvalidArgumentException('no route with that name "' . $name . '"');
+    }
+
+    private static function routeExistIn(string $name, string $method)
+    {
+        return in_array($name, array_map(fn($el) => $el->name(), self::$routes[$method])) ? $method : null;
     }
 
     public function resolve()

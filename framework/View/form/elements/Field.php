@@ -66,7 +66,7 @@ abstract class Field
         $this->model = $model;
         $this->prepareOptions();
         $this->attribute = $fieldName;
-        $this->value = $this->model->{$this->attribute};
+        $this->value = $this->getValue();
     }
 
     // TODO add extra icon
@@ -185,14 +185,14 @@ abstract class Field
     /** @return string|bool|int|float */
     protected function getDefaultOptionValue()
     {
-        if (empty($this->model->{$this->attribute})) {
+        if (empty($this->getValue())) {
             $this->options['value'] ??= '';
             return $this->options['value'];
         }
-        if (is_object($this->model->{$this->attribute})) {
+        if (is_object($this->getValue())) {
             return '';
         }
-        return $this->model->{$this->attribute};
+        return $this->getValue();
     }
 
     protected function getOptionsStr(): string
@@ -236,5 +236,10 @@ abstract class Field
                 $this->{$key} = trim($value);
             }
         }
+    }
+
+    private function getValue()
+    {
+        return $this->model->{$this->attribute}  ?? '';
     }
 }

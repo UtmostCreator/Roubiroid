@@ -2,14 +2,15 @@
 
 namespace Framework\validation;
 
-class Manager
+class ValidationManager
 {
     protected array $rules = [];
 
-    public function test($call)
-    {
-        $call(['error1', 'error2']);
-    }
+//    // TODO related to function "private function private"
+//    public function test($call)
+//    {
+//        $call(['error1', 'error2']);
+//    }
 
     public function addRule(string $alias, Rule $rule): self
     {

@@ -2,9 +2,8 @@
 
 namespace Framework;
 
-use Framework\db\DbModel;
-
-abstract class UserModel extends DbModel
+//abstract class UserModel extends DbModel
+abstract class UserModel extends Model
 {
     public bool $is_admin = false;
 

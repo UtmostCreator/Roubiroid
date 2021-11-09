@@ -3,8 +3,11 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CreateNewDbConnectionController;
 use App\Http\Controllers\CsrfExampleProtectionController;
+use App\Http\Controllers\ExampleController;
+use App\Http\Controllers\OrderProductController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\ShowProductController;
 use App\Http\Controllers\SiteController;
 use Framework\exceptions\NotFoundException;
 use Framework\routing\Router;
@@ -45,6 +48,15 @@ Router::addSystem(400, function () {
 //Router::get('/', PointTo::getBase() . 'views/_404');
 
 //Router::get('/', [SiteController::class, 'home']);
+Router::get('/', [ExampleController::class, 'homePage']);
+Router::get('/select-with-join', [ExampleController::class, 'selectWithJoin']);
+Router::get('/select-using-array', [ExampleController::class, 'selectUsingArray']);
+Router::get('/select-using-string', [ExampleController::class, 'selectUsingString']);
+Router::get('/products/view/{product}', [ShowProductController::class, 'handle'])->name('view-product');
+Router::get('/products/order/{product}', [OrderProductController::class, 'handle'])->name('order-product');
+Router::get('/new-login', [AuthController::class, 'newLogin'])->name('log-in-user-form');
+Router::post('/new-login', [AuthController::class, 'newLogin'])->name('log-in-user');
+//Router::get('/show-login', [AuthController::class, 'showLoginForm'])->name('show-login-form');
 //Router::get('/contact', [SiteController::class, 'contact']);
 
 //Router::get('/contact', 'contact'); // render view
@@ -68,9 +80,10 @@ Router::post('/csrf/example', [CsrfExampleProtectionController::class, 'handle']
 Router::get('/products/list', [SiteController::class, 'listAdvanced'])->name('product-list-adv');
 //Router::get('/products-list/{page?}', [ListProductsController::class, 'handle'])->name('list-products');
 //Router::get('/register', [RegisterController::class, 'handle'])->name('register-user');
-Router::get('/register', [AuthController::class, 'register'])->name('register-user');
+Router::get('/register', [RegisterController::class, 'handle'])->name('register-user');
 Router::post('/register', [RegisterController::class, 'handle'])->name('register-user');
-Router::get('/products/{page}', [SiteController::class, 'viewProductV2'])->name('product-list');
+//Router::post('/register', [RegisterController::class, 'handle'])->name('register-user');
+
 // TODO END OF order does matter
 //Router::route('product-list', ['page' => 2]);
 /*Router::get('/products/view/', function () {

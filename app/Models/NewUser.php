@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Framework\db\NewModel;
+use Framework\db\BaseActiveRecord;
 use models\Profile;
 
 // #[Table('users')] // TODO PHP 8 only
-class NewUser extends NewModel
+class NewUser extends BaseActiveRecord
 {
     public string $table = 'users';
 

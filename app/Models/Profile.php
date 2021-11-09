@@ -3,9 +3,9 @@
 namespace models;
 
 use App\Models\NewUser;
-use Framework\db\NewModel;
+use Framework\db\BaseActiveRecord;
 
-class Profile extends NewModel
+class Profile extends BaseActiveRecord
 {
     protected string $table = 'profile';
 

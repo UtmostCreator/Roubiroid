@@ -59,25 +59,6 @@ class SiteController extends Controller
         Application::$app->response->redirect('');
     }
 
-    public function viewProduct()
-    {
-        $parameters = Router::getActiveRoute()->parameters();
-//        DD::dd($parameters);
-        echo "viewProduct";
-//        DD:\dd(1);
-//        \Modules\DD\DD::dd($parameters);
-    }
-
-    public function viewProductV2()
-    {
-        return view('products/view', [
-            'product' => 'test',
-            'scary' => '<script>alert("boo!")</script>'
-        ]);
-        Router::route('product-list', ['page' => 2, 'name' => 'test']);
-//        DD::dd(Router::current()->parameters());
-    }
-
     public function listAdvanced()
     {
         $test = 123;

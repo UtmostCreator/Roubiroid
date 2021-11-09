@@ -3,13 +3,16 @@
 namespace Framework;
 
 use Framework\db\Connection\Connection;
+use Framework\db\BaseActiveRecord;
 use Framework\helpers\ArrayHelper;
 use Framework\helpers\Sanitizer;
 use Framework\helpers\StringHelper;
 use Framework\db\Query;
 use Framework\notification\Message;
+use Framework\validation\ValidationManager;
+use Modules\DD;
 
-abstract class Model
+abstract class Model extends BaseActiveRecord
 {
     public array $errors = [];
     public const SINGLE_ERROR_MESSAGE = false;
@@ -35,7 +38,10 @@ abstract class Model
 
     private ?array $skippedFields = [];
     private ?Model $oldObject;
-    private array $dirty = [];
+    /**
+     * @var mixed|null
+     */
+    protected $checkIfHasChanges = true;
 
     abstract public function rules(): array;
 
@@ -49,37 +55,37 @@ abstract class Model
         $this->booted();
     }
 
-    public function __get($name)
-    {
-        try {
-            if (property_exists($this, $name)) {
-                return $this->{$name};
-            }
+//    public function __get($name)
+//    {
+//        try {
+//            if (property_exists($this, $name)) {
+//                return $this->{$name};
+//            }
+//
+//            $propName = $name;
+//            $arr = explode('_', $name);
+//            $arr = array_map(fn($el) => ucfirst($el), $arr);
+//            $name = implode('', $arr);
+//            $methodName = "get{$name}Attribute";
+//            //        dd($methodName);
+//            if (method_exists($this, $methodName)) {
+//                return $this->{$methodName}();
+//            }
+//            throw new \InvalidArgumentException("There is no such field name like \"{$propName}\"");
+//        } catch (\Exception $exception) {
+//            exit($exception->getMessage());
+//        }
+//    }
 
-            $propName = $name;
-            $arr = explode('_', $name);
-            $arr = array_map(fn($el) => ucfirst($el), $arr);
-            $name = implode('', $arr);
-            $methodName = "get{$name}Attribute";
-            //        dd($methodName);
-            if (method_exists($this, $methodName)) {
-                return $this->{$methodName}();
-            }
-            throw new \InvalidArgumentException("There is no such field name like \"{$propName}\"");
-        } catch (\Exception $exception) {
-            exit($exception->getMessage());
-        }
-    }
-
-    public function __clone()
-    {
-        foreach (get_object_vars($this) as $attrKey => $attrVal) {
-            $this->id = -1;
-            if (!in_array($attrKey, $this->getFillable())) {
-                unset($this->{$attrKey});
-            }
-        }
-    }
+//    public function __clone()
+//    {
+//        foreach (get_object_vars($this) as $attrKey => $attrVal) {
+//            $this->id = -1;
+//            if (!in_array($attrKey, $this->getFillable())) {
+//                unset($this->{$attrKey});
+//            }
+//        }
+//    }
 
     public function load($data = [])
     {
@@ -93,6 +99,16 @@ abstract class Model
         }
     }
 
+    public function loadToAttributes($data = [])
+    {
+        $this->oldObject = clone $this;
+
+//        DD::dd($this->oldObject);
+        foreach ($data as $key => $value) {
+            $this->{$key} = $value;
+        }
+    }
+
     protected function booted()
     {
         // it is created and ready for any other secondary tasks.
@@ -103,8 +119,12 @@ abstract class Model
         return [];
     }
 
-    public function validate(): bool
+    public function validate($attributes = null, $clearErrors = true): bool
     {
+        if ($clearErrors) {
+            $this->clearErrors();
+        }
+//        $this->beforeValidation();
         foreach ($this->rules() as $key => $rules) {
             $attributes = null;
             if (is_string($key)) {
@@ -138,6 +158,11 @@ abstract class Model
                 }
             }
 
+//            $man = new ValidationManager();
+//            $man->test(\Closure::bind(function ($errors) {
+//                $this->private($errors);
+//            }, $this));
+//            DD::dd(2);
             $this->checkIncomingAttributes($attributes);
             if (is_string($attributes)) {
                 $this->validateSingleAttribute($attributes, $rules);
@@ -170,7 +195,18 @@ abstract class Model
         }
 //        DD::dd($this->errors);
 
-        return !$this->hasErrors() && $this->isDirty();
+//        $this->afterValidation();
+        if ($this->checkIfHasChanges) {
+            return !$this->hasErrors() && $this->isDirty();
+        }
+        return !$this->hasErrors();
+    }
+
+    private function private($params)
+    {
+        DD::dl($params);
+        echo 'private';
+        exit;
     }
 
     protected function addErrorForRule(string $attr, string $ruleName, $params = [])
@@ -264,27 +300,28 @@ abstract class Model
         }
     }
 
-    public static function delete(int $id)
-    {
-        Query::getInst()->delete(static::tableName(), $id);
-    }
+//    public static function delete(int $id)
+//    {
+//        Query::getInst()->delete(static::tableName(), $id);
+//    }
 
     public static function deleteWhereIn($field, array $arr): int
     {
         return Query::getInst()->deleteWhereIn(static::tableName(), $field, $arr);
     }
 
-    public static function update($data, $where): int
-    {
-        return Query::getInst()->update(static::tableName(), $data, $where);
-    }
+//    public static function update($data, $where): int
+//    {
+//        return Query::getInst()->update(static::tableName(), $data, $where);
+//    }
 
     private function validateSingleAttribute(string $attr, array $rules)
     {
         $value = $this->{$attr};
         foreach ($rules as $rule) {
-            $ruleName = $rule; // e.g. self::RULE_REQUIRED, self::RULE_EMAIL
-            if (!is_string($ruleName)) {
+            $ruleName = ArrayHelper::isAssoc($rules) ? array_keys($rules)[0] : $rule; // e.g. self::RULE_REQUIRED, self::RULE_EMAIL
+//            DD::dd($ruleName);
+            if (!is_string($ruleName) && is_array($rule)) {
                 /** e.g.
                  * [self::RULE_UNIQUE, 'class' => self::class] */
                 $ruleName = is_string(array_key_first($rule)) ? array_key_first($rule) : array_shift($rule);
@@ -300,7 +337,15 @@ abstract class Model
             // $value - value to be validated
             // TODO convert all int to int
 //            DD::dd($rule);
-            $ruleValue = $rule[$ruleName] ?? null;
+            if (!is_string($rule) && isset($rule[$ruleName])) {
+                $ruleValue = $rule[$ruleName];
+            } elseif (!is_string($rule) && isset($rules[$ruleName])) {
+                $ruleValue = $rules[$ruleName];
+            } else {
+                $ruleValue = $rule;
+            }
+//            if ($ruleName == self::RULE_DEFAULT_VALUE)
+//                DD::dd($ruleValue);
 //            DD::dd($ruleName);
             switch ($ruleName) {
                 case self::RULE_REQUIRED:
@@ -369,9 +414,11 @@ abstract class Model
                     break;
                 case self::RULE_DEFAULT_VALUE:
                     $compareWith = $ruleValue;
-                    if (!($value || $compareWith) && !($value == 0 && $compareWith == 0)) {
-                        $this->addErrorForRule($attr, $ruleName);
-                    }
+//                    DD::dd($value);
+//                    if (!($value || $compareWith) && !($value == 0 && $compareWith == 0)) {
+//                        $this->addErrorForRule($attr, $ruleName);
+//                    }
+//                    DD::dd($this->getFirstError($attr));
 
                     if (!empty($value) || $value === 0) {
                         $this->{$attr} = $value;
@@ -393,7 +440,7 @@ abstract class Model
                     break;
                 case self::RULE_UNIQUE:
                     if (strlen($value) <= self::MIN_VALUE_TO_CHECK_UNIQUENESS) {
-                        $this->addErrorForRule($attr, $ruleName, [
+                        $this->addErrorForRule($attr, self::RULE_UNIQUE_TOO_SHORT, [
                             'field' => $this->getLabel($attr),
                             'n' => self::MIN_VALUE_TO_CHECK_UNIQUENESS
                         ]);
@@ -457,5 +504,14 @@ abstract class Model
         }
 //        DD::dd($this->dirty);
         return count($this->dirty) > 0;
+    }
+
+    protected function clearErrors($attribute = null)
+    {
+        if (is_null($attribute)) {
+            $this->errors = [];
+        } else {
+            unset($this->errors[$attribute]);
+        }
     }
 }

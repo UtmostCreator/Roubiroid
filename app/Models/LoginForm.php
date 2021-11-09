@@ -24,7 +24,7 @@ class LoginForm extends Model
     {
         $user = User::findOne(['email' => $this->email]);
         if (!$user) {
-            $this->addError('email', 'Check if you enter you data correctly!');
+            $this->addError('email', 'Your password or email is incorrect');
             return false;
         }
 

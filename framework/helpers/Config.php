@@ -9,11 +9,16 @@ class Config
 {
     protected static array $data;
 
-    public static function get($pathTo = '')
+    public static function init()
     {
         if (empty(self::$data)) {
             self::$data = require_once Paths::getBase() . '/config/config.php';
         }
+    }
+
+    public static function get($pathTo = '')
+    {
+        self::init();
         if (empty($pathTo)) {
             return self::$data;
         }

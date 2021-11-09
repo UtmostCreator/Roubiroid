@@ -118,17 +118,17 @@ class AdvancedEngine implements EngineInterface
         // default regex: "#\s+@([^(]+){$paramsRegExp}#"
         // custom regex: "#\s+(?<=@)([^(]+){$paramsRegExp}#"
         $template = preg_replace_callback("#(?<=\?>)[\s+\S+]+@([^(]+){$paramsRegExp}#", function ($matches) {
-            return PHP_EOL . '<?php $this->' . $matches[1] . '(' . $matches[2] . '); ?>';
+            return '<?php $this->' . $matches[1] . '(' . $matches[2] . '); ?>';
         }, $template);
 
         // replace `{{ ... }}` with `print $this->escape(...)`
         $template = preg_replace_callback('#\{\{([^}]*)\}\}#', function ($matches) {
-            return PHP_EOL . '<?php print $this->escape(' . $matches[1] . '); ?>';
+            return '<?php print $this->escape(' . $matches[1] . '); ?>';
         }, $template);
 
         // replace `{!! ... !!}` with `print ...`
         $template = preg_replace_callback('#\{!!([^}]+)!!\}#', function ($matches) {
-            return PHP_EOL . '<?php print ' . $matches[1] . '; ?>';
+            return '<?php print ' . $matches[1] . '; ?>';
         }, $template);
 
         return $template . PHP_EOL;

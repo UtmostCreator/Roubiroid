@@ -119,6 +119,7 @@ class MigrateCommand extends Command
 
     private function connection(): Connection
     {
+        // TODO DB connection creation - move to other place
         $factory = new Factory();
 
         $factory->addConnector('mysql', function ($config) {
