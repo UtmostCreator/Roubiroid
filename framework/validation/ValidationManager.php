@@ -6,6 +6,11 @@ class Manager
 {
     protected array $rules = [];
 
+    public function test($call)
+    {
+        $call(['error1', 'error2']);
+    }
+
     public function addRule(string $alias, Rule $rule): self
     {
         $this->rules[$alias] = $rule;

@@ -17,7 +17,7 @@ abstract class NewModel
      * to retrieve data the MAGIC __get method is used;
      * to set the data the MAGIC __set method is used.
      */
-    protected array $attributes;
+    protected array $attributes = [];
     /** @description  is used to show the attributes/fields that were changed to update/save only them */
     protected array $dirty = [];
 
@@ -54,7 +54,9 @@ abstract class NewModel
     {
         $setter = 'set' . ucfirst($property) . 'Attribute';
 
-        array_push($this->dirty, $property);
+        if (!in_array($property, $this->dirty)) {
+            array_push($this->dirty, $property);
+        }
 
         if (method_exists($this, $setter)) {
             $this->attributes[$property] = $this->$setter($value);
@@ -97,14 +99,14 @@ abstract class NewModel
     {
         if (!isset($this->table)) {
             /** TODO only php 8+
-            $reflector = new \ReflectionClass(static::class);
-
-            foreach ($reflector->getAttributes() as $attribute) {
-                if ($attribute->getName() == TableName::class) {
-                    return $attribute->getArguments()[0];
-                }
-            }
-            */
+             * $reflector = new \ReflectionClass(static::class);
+             *
+             * foreach ($reflector->getAttributes() as $attribute) {
+             * if ($attribute->getName() == TableName::class) {
+             * return $attribute->getArguments()[0];
+             * }
+             * }
+             */
             throw new \Exception('$table is not set and getTable is not defined');
         }
 
@@ -156,10 +158,13 @@ abstract class NewModel
             $values[$dirtyProp] = $this->attributes[$dirtyProp];
         }
 
-        $data = [array_keys($values), $values];
+        $keys = $this->getFillable();
+//        DD::dd($keys);
+        $dbValues = array_map(fn ($el) => $this->attributes[$el], $keys);
+        $data = [$keys, $dbValues];
 
         $query = static::query();
-
+//        DD::dd($data);
         if (isset($this->attributes['id'])) {
             $query
                 ->where('id', $this->attributes['id'])
@@ -196,6 +201,11 @@ abstract class NewModel
         }
 
         return $this;
+    }
+
+    public function getDirty()
+    {
+        return $this->dirty;
     }
 
     /** @description casts $value to Integer value */
@@ -251,5 +261,11 @@ abstract class NewModel
         $query = $class::query()->from($model->getTable())->where($primaryKey, $this->attributes[$foreignKey]);
 
         return new Relationship($query, 'first');
+    }
+
+    // TODO by IDs array
+    public static function find(int $id): self
+    {
+        return static::where('id', $id)->first();
     }
 }
