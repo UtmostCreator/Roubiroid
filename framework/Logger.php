@@ -21,7 +21,7 @@ class Logger
     public static function getInst(): self
     {
         if (is_null(self::$inst)) {
-            return new self();
+            return new static();
         }
 
         return self::$inst;

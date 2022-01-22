@@ -97,6 +97,6 @@ class Request
 
     public function refererPage(): string
     {
-        return $this->referer;
+        return $this->referer ?? '';
     }
 }

@@ -95,7 +95,7 @@ class View
         $layoutsFolder = Application::$config['layout']['folder'];
         return sprintf(
             '%s/%s/%s/%s.%s',
-            Application::$ROOT_DIR,
+            basePath(),
             $viewFolder,
             $layoutsFolder,
             $this->layoutName,
@@ -107,7 +107,7 @@ class View
     {
         return sprintf(
             "%s/%s/%s.%s",
-            Application::$ROOT_DIR,
+            basePath(),
             Application::$config['views']['folder'],
             $view,
             $this->ext

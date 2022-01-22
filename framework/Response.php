@@ -35,9 +35,9 @@ class Response
 //        DD::dd($statusCode);
         switch ($url) {
             case 'home':
+            case '':
             case '/':
                 header('Location: ' . URL::getBase(), true, $statusCode);
-                exit();
                 break;
             case 'error':
                 throw new \InvalidArgumentException('Error; Incorrect URL is specified');
@@ -49,7 +49,6 @@ class Response
                 $statusCode = 403;
                 header('Location: ' . URL::getBase() . 'forbidden.php', true, $statusCode);
                 break;
-            case '':
             case 'back':
                 $isTheSameUrl = URL::getBase(false) . app()->request->getUri();
                 if (!empty(app()->request->getUri()) && $isTheSameUrl !== app()->request->refererPage()) {
