@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Framework\db\migration;
+namespace Framework\db\Migration;
 
 
 use Framework\helpers\FileHelper;
@@ -13,7 +13,7 @@ class AbstractMigration
     public static function getMigrationFilePath($migration): string
     {
         return FileHelper::mergePath([
-            Application::$ROOT_DIR,
+            basePath(),
             Application::$config['migrations']['folder'],
             $migration
         ]);

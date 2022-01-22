@@ -5,7 +5,7 @@ namespace Framework\db;
 use Framework\helpers\ArrayHelper;
 use Framework\helpers\FileHelper;
 use Framework\Application;
-use Framework\db\migration\AbstractMigration;
+use Framework\db\Migration\AbstractMigration;
 use Framework\Logger;
 use PDO;
 
@@ -51,7 +51,7 @@ class Database
         $appliedMigrations = $this->getAppliedMigrations();
 
         $files = FileHelper::getAllFilesAndFolderIn(FileHelper::mergePath(
-            [Application::$ROOT_DIR, Application::$config['migrations']['folder']]
+            [basePath(), Application::$config['migrations']['folder']]
         ));
 
         $toApplyMigrations = array_diff($files, $appliedMigrations);

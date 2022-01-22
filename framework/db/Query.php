@@ -413,7 +413,7 @@ class Query
     public function dropTable($tableName)
     {
         // DROP TABLE IF EXISTS `rz_framework`.`migrations`
-        $sql = $this->dbTable("DROP TABLE IF EXISTS", $tableName);
+        $sql = $this->dbTable("DROP TABLE IF EXISTS ", $tableName);
 //        $sql = "SET FOREIGN_KEY_CHECKS = 0; $sql SET FOREIGN_KEY_CHECKS = 1;";
         $this->stmt = $this->pdo->prepare($sql);
         return $this->stmt->execute();
