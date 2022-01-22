@@ -61,7 +61,7 @@ class Form
         self::$HTML = self::validateAttributes($options);
         echo self::$HTML;
 
-        return new self();
+        return new static();
     }
 
     public static function end(): string

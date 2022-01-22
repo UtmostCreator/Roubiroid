@@ -17,7 +17,7 @@ class Role extends Model implements InterfaceRole
         return 'roles';
     }
 
-    public static function attributes(): array
+    public static function getAttributes(): array
     {
         return [
             'name',

@@ -16,7 +16,7 @@ class Permission extends Model implements InterfacePermission
         return 'permissions';
     }
 
-    public static function attributes(): array
+    public static function getAttributes(): array
     {
         return [
             'name',

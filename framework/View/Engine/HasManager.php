@@ -2,13 +2,13 @@
 
 namespace Framework\View\Engine;
 
-use Framework\View\Manager;
+use Framework\View\EngineManager;
 
 trait HasManager
 {
-    protected Manager $manager;
+    protected EngineManager $manager;
 
-    public function setManager(Manager $manager): self
+    public function setManager(EngineManager $manager): self
     {
         $this->manager = $manager;
         return $this;

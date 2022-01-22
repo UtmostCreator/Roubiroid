@@ -2,6 +2,8 @@
 
 namespace Framework\routing;
 
+use InvalidArgumentException;
+
 class RouteHandler
 {
     protected ?string $className;
@@ -14,16 +16,17 @@ class RouteHandler
      */
     public function __construct(array $callback = [])
     {
+        if (empty($callback)) {
+            throw new InvalidArgumentException("Callback is wronly formed");
+        }
         $this->callback = $callback;
-        if (!empty($this->callback)) {
-            $this->className = $this->callback[0];
-            $this->methodName = $this->callback[1];
-            if (!class_exists($this->className)) {
-                throw new \Exception("Class '{$this->className}' does not exist!");
-            }
-            if (!method_exists($this->className, $this->methodName)) {
-                throw new \Exception("Method called '{$this->methodName}' does not exist in class '{$this->className}'");
-            }
+        $this->className = $this->callback[0];
+        $this->methodName = $this->callback[1];
+        if (!class_exists($this->className)) {
+            throw new InvalidArgumentException("Class '{$this->className}' does not exist!");
+        }
+        if (!method_exists($this->className, $this->methodName)) {
+            throw new InvalidArgumentException("Class: {$this->className} do not define '{$this->methodName}' method");
         }
     }
 

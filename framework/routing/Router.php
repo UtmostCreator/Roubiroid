@@ -13,14 +13,16 @@ use Modules\DD;
 
 class Router
 {
+    public const DEFAULT_REDIRECT_METHOD = 'get';
+
     public Request $request;
     public Response $response;
+    public static string $redirectMethod = self::DEFAULT_REDIRECT_METHOD;
     protected ?Route $activeRoute = null;
     protected static ?Router $instance = null;
-    private static array $rules = [];
     protected static array $routes = [];
-    public const DEFAULT_REDIRECT_METHOD = 'get';
-    public static string $redirectMethod = self::DEFAULT_REDIRECT_METHOD;
+
+    private static array $rules = [];
 
     // TODO implement all of these
 //    get, post, patch, put, delete, head
@@ -182,6 +184,9 @@ class Router
      */
     public static function route(string $name, array $parameters = []): string
     {
+        $methodExistIn = self::routeExistIn($name, 'post');
+        $methodExistIn ??= self::routeExistIn($name, 'get');
+        self::$redirectMethod = $methodExistIn;
         self::$redirectMethod ??= self::DEFAULT_REDIRECT_METHOD;
         foreach (self::$routes[self::$redirectMethod] as $route) {
             if ($route->name() !== $name) {
@@ -210,6 +215,11 @@ class Router
             // from this '/products/{page}' '{page}' will be replaced with its value
             // from this '/products/{page?}' '{page?}' will be replaced with its value
             $path = str_replace($finds, $replaces, $path);
+
+            if (strpos($path, '{')) {
+                throw new \Exception('Wrong view or parameters supplied to router');
+            }
+
             // remove any optional parameters not provided
             $path = preg_replace("#{[^}]+}#", '', $path); // from '/products/2{test}{test?}' to '/products/2'
             // TODO we should think about warning if a required
@@ -217,6 +227,11 @@ class Router
             return $path;
         }
         throw new \InvalidArgumentException('no route with that name "' . $name . '"');
+    }
+
+    private static function routeExistIn(string $name, string $method)
+    {
+        return in_array($name, array_map(fn($el) => $el->name(), self::$routes[$method])) ? $method : null;
     }
 
     public function resolve()
@@ -238,14 +253,18 @@ class Router
     {
         $path = $this->request->getPath();
         $method = $this->request->getMethod();
+//        DD::dd($this);
         $callback = $this->match($method, $path) ?? false;
-//        DD::dd($callback);
+
         if ($callback === false) {
             abort(404);
-//            throw new NotFoundException();
         }
         $this->activeRoute = $callback;
-//        DD::dl($this->activeRoute);
+    }
+
+    public static function getActiveRoute(): Route
+    {
+        return static::$instance->activeRoute;
     }
 
     /**
@@ -272,24 +291,14 @@ class Router
         // e.g. public function login(Request $request, Response $response)
         // move to route method called dispatch
         try {
-            // TODO check if $whoops->pushHandler(new PrettyPageHandler()); can be placed here
-            return $this->dispatch([$controller, $controller->action], [$this->request, $this->response]);
+            return $this->dispatch([$controller, $controller->action], [$this->request, $this->response, $this->activeRoute]);
+//            return $this->dispatch([$controller, $controller->action], [$this->request, $this->response]);
         } catch (\Throwable $e) {
             if ($e instanceof ValidationException) {
                 $_SESSION['errors'] = $e->getErrors();
                 return redirect('back');
             }
-            // this action could be thrown and exception,
-            // so we catch it and display the global error
-            // page that we will define in the routes file
-//            DD::dd($_ENV['APP_ENV']);
-//            if (isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === 'dev') {
-//                $whoops = new Run();
-//                $whoops->pushHandler(new PrettyPageHandler());
-//                $whoops->register();
-//                throw $e;
-////                throw new \Exception($t->getMessage() . "<br/>" . $t->getFile());
-//            }
+
             if (isDev()) {
                 throw $e;
             }
@@ -299,12 +308,16 @@ class Router
 
     public function dispatch(array $callback, array $params)
     {
+        if (!is_callable($callback)) {
+            throw new \InvalidArgumentException("Invalid callback passed to dispatch");
+        }
         return call_user_func_array($callback, $params);
 //        return call_user_func($callback, ...$params); // the same
     }
 
     private function match(string $method, string $path): ?Route
     {
+//        DD::dd($this);
         foreach (static::$routes[$method] as $route) {
             if ($route instanceof Route && $route->matches($method, $path)) {
                 return $route;
@@ -340,10 +353,6 @@ class Router
         return (static::$routes[500])();
     }
 
-    public static function getActiveRoute(): Route
-    {
-        return static::$instance->activeRoute;
-    }
     /**
      * Define your route model bindings, pattern filters, etc.
      *
@@ -357,11 +366,11 @@ class Router
 //            Route::prefix('api')
 //                ->middleware('api')
 //                ->namespace($this->namespace)
-//                ->group(base_path('routes/api.php'));
+//                ->group(basePath('routes/api.php'));
 //
 //            Route::middleware('web')
 //                ->namespace($this->namespace)
-//                ->group(base_path('routes/web.php'));
+//                ->group(basePath('routes/web.php'));
 //        });
 //    }
 }

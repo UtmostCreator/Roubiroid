@@ -6,7 +6,7 @@ use Closure;
 use Framework\View\Engine\EngineInterface;
 use Modules\DD;
 
-class Manager
+class EngineManager
 {
     protected array $paths = [];
 //    ['basic.php', 'advanced.php']

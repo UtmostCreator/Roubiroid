@@ -3,7 +3,6 @@
 namespace Framework\View\Engine;
 
 use Framework\helpers\FileHelper;
-use Framework\PointTo;
 use Framework\View\View;
 use Modules\DD;
 
@@ -25,20 +24,23 @@ class AdvancedEngine implements EngineInterface
     public function render(View $view): string
     {
         $hash = md5($view->path);
-        $folder = base_path() . '/storage/framework/views';
+        $hashedFileName = "{$hash}.php";
+        $folder = basePath() . '/storage/framework/views';
         if (FileHelper::canADirectoryBeCreated($folder)) {
             FileHelper::createDir($folder);
         }
 
-        if (!is_file("{$folder}/{$hash}.php")) {
-            touch("{$folder}/{$hash}.php");
+        $hashedFileLocation = "{$folder}/{$hashedFileName}";
+        if (!is_file($hashedFileLocation)) {
+            touch($hashedFileLocation);
         }
 
-        $cached = realpath("{$folder}/{$hash}.php");
+        $cached = realpath($hashedFileLocation);
 
-        $fileNotExistOrItIsOutdated = !file_exists($hash) || filemtime($view->path) > filemtime($hash);
+        $fileNotExistOrItIsOutdated = !file_exists($hashedFileLocation) || filemtime($view->path) > filemtime($hashedFileLocation);
         if ($fileNotExistOrItIsOutdated) {
             $content = $this->compile(file_get_contents($view->path));
+            $content = "<!--$view->path-->\n" . $content;
             file_put_contents($cached, $content);
         }
 
@@ -51,7 +53,7 @@ class AdvancedEngine implements EngineInterface
         if ($layout = $this->layouts[$cached] ?? null) {
             $contentsWithLayout = view(
                 $layout,
-                array_merge($view->data, ['contents' => $contents]) // the same as down below
+                array_merge($view->data, ['contents' => $contents])
             );
 
             return $contentsWithLayout;
@@ -118,17 +120,17 @@ class AdvancedEngine implements EngineInterface
         // default regex: "#\s+@([^(]+){$paramsRegExp}#"
         // custom regex: "#\s+(?<=@)([^(]+){$paramsRegExp}#"
         $template = preg_replace_callback("#(?<=\?>)[\s+\S+]+@([^(]+){$paramsRegExp}#", function ($matches) {
-            return PHP_EOL . '<?php $this->' . $matches[1] . '(' . $matches[2] . '); ?>';
+            return '<?php $this->' . $matches[1] . '(' . $matches[2] . '); ?>';
         }, $template);
 
         // replace `{{ ... }}` with `print $this->escape(...)`
         $template = preg_replace_callback('#\{\{([^}]*)\}\}#', function ($matches) {
-            return PHP_EOL . '<?php print $this->escape(' . $matches[1] . '); ?>';
+            return '<?php print $this->escape(' . $matches[1] . '); ?>';
         }, $template);
 
         // replace `{!! ... !!}` with `print ...`
         $template = preg_replace_callback('#\{!!([^}]+)!!\}#', function ($matches) {
-            return PHP_EOL . '<?php print ' . $matches[1] . '; ?>';
+            return '<?php print ' . $matches[1] . '; ?>';
         }, $template);
 
         return $template . PHP_EOL;
@@ -143,6 +145,8 @@ class AdvancedEngine implements EngineInterface
 
     public function __call($name, $values)
     {
+        // $name is the macros name and the ...values is the args; in  useMacro ViewProvider will be bind to
+        // 'escape', [0=>'scrftoke as example']
         return $this->manager->useMacro($name, ...$values);
     }
 
