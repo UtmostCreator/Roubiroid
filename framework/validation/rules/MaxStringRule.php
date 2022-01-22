@@ -2,26 +2,24 @@
 
 namespace Framework\validation\rules;
 
-use Framework\helpers\UtilsHelper;
 use Framework\Model;
 use Framework\validation\BaseRule;
-use Modules\DD;
 
-class RequiredRule extends BaseRule
+class MaxStringRule extends BaseRule
 {
 
     public function validate(Model $model, string $field, array $params): bool
     {
-        return !UtilsHelper::isEmpty($model->$field);
+        parent::validateParams($params);
+
+        $length = (int)$params[0];
+        return strlen($model->$field) <= $length;
     }
 
     public function getMessage(Model $model, string $field, array $params): string
     {
-        if ($message = parent::getMessage($model, $field, $params)) {
-            return $message;
-        }
-
+        $length = (int)$params[0];
         $field = $this->fieldNameToUpperCase($field);
-        return sprintf("%s is required", $field);
+        return "{$field} should have at most {$length} characters";
     }
 }

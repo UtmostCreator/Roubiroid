@@ -2,26 +2,25 @@
 
 namespace Framework\validation\rules;
 
-use Framework\helpers\UtilsHelper;
 use Framework\Model;
+use Framework\Rules;
 use Framework\validation\BaseRule;
 use Modules\DD;
 
-class RequiredRule extends BaseRule
+class MinStringRule extends BaseRule
 {
 
     public function validate(Model $model, string $field, array $params): bool
     {
-        return !UtilsHelper::isEmpty($model->$field);
+        parent::validateParams($params);
+        $length = $params[0] ?? $params[Rules::MIN_STR];
+        return strlen($model->$field) >= $length;
     }
 
     public function getMessage(Model $model, string $field, array $params): string
     {
-        if ($message = parent::getMessage($model, $field, $params)) {
-            return $message;
-        }
-
+        $length = $params[0] ?? $params[Rules::MIN_STR];
         $field = $this->fieldNameToUpperCase($field);
-        return sprintf("%s is required", $field);
+        return $params['message'] ?? "{$field} should be at least {$length} characters";
     }
 }
