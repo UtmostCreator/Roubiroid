@@ -16,7 +16,7 @@ class Manager
     public function addPath(string $path): self// : static
     {
         if (!is_dir($path)) {
-            throw  new \InvalidArgumentException(sprintf('Invalid path to views folder %s', $path));
+            throw  new \InvalidArgumentException(sprintf('Invalid path to folder %s; or folder does not exist', $path));
         }
         array_push($this->paths, $path);
         return $this;
@@ -39,7 +39,7 @@ class Manager
                 $file = "{$path}/{$template}.{$extension}";
 
                 if (is_file($file)) {
-                    return $engine->render($file, $data);
+                    return new View($engine, realpath($file), $data);
                 }
             }
         }
@@ -87,7 +87,21 @@ class Manager
             // inside a macro refers to the view object
             // which means $data and $path can be used,
             // and you can get back to the $engine...
-            $bound = $this->macros[$name]->bindTo($this);
+            $bound = $this->macros[$name]->bindTo($this); // after this method I will be able to use this macro inside the ViewManager
+//            DD::dd($this->macros[$name](...$values));
+            /*
+             * $this->macros[$name] -- for escape method
+             object(Closure)#13 (2) {
+                  ["this"]=>
+                  object(Framework\Provider\ViewProvider)#78 (0) {
+                  }
+                  ["parameter"]=>
+                  array(1) {
+                    ["$value"]=>
+                    string(10) ""
+                  }
+                }
+             * */
 
 //            function add($a, $b) {
 //                return $a + $b;
