@@ -1,8 +1,9 @@
 <?php
 
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv = Dotenv\Dotenv::createImmutable(\Framework\Paths::getBase());
 $dotenv->load();
-require_once './../config/consts.php';
+$extraPath = isDev() ? $_ENV['LOCAL_PROJECT_LOC'] : $_ENV['REMOTE_PROJECT_LOC'];
+require_once $_SERVER['DOCUMENT_ROOT'] . $extraPath . 'config/consts.php';
 
 //\Modules\DD\DD::dd(ASSET_URL);
 return $config = [
@@ -29,8 +30,15 @@ return $config = [
     |
     */
     'migrations' => [
-        'folder' => 'migrations',
-        'table' => 'migrations'
+        'folder' => 'database/migrations/',
+        'table' => 'migrations',
+        'old_folder' => 'migrations',
+        'old_table' => 'migrations'
+    ],
+    // TODO maybe move to migrations?
+    'seeders' => [
+        'folder' => 'database/seeders/',
+        'table' => 'seeders',
     ],
     'userClass' => \models\User::class,
     'db' => [
@@ -61,6 +69,10 @@ return $config = [
 //            ]) : [],
         ]
     ],
+// TODO comment
+//    'validation' => [
+//        'singleErrorMessage' => true,
+//    ],
     'website' => [
         'name' => 'Your Web Site Name'
     ],
@@ -70,5 +82,8 @@ return $config = [
     ],
     'views' => [
         'folder' => 'resources/views'
+    ],
+    'providers' => [
+        'directory' => 'config/'
     ],
 ];

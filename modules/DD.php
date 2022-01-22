@@ -24,6 +24,8 @@ class DD
 {
     private static float $startTime = 0.0;
     private static float $endTime = 0.0;
+    private static float $total = 0.0;
+    private static $TEXT = '';
 
     public static function dd($data, $shotHTML = false, $exit = true)
     {
@@ -77,10 +79,11 @@ class DD
     {
         self::$startTime;
 
-        self::$endTime = microtime(true);
-        $duration = self::$endTime - self::$startTime;
+        static::$endTime = microtime(true);
+        $duration = static::$endTime - static::$startTime;
         $ms = round($duration * 1000, 3);
         $s = round($duration, 3);
+        static::$total += $s;
 //DD::dd($s);
         return "<span title='Total tile to complete the whole script took {$ms} ms;'>{$s} sec;</span>";
 //        echo 'Your script needs ' . (self::$endTime - self::$startTime) . ' ms/s to execute' . PHP_EOL;
@@ -158,12 +161,15 @@ pre.colored {
         $shortDumpInfo = '<pre class="file-info wrap-any-text">';
         if (isset($trace[1])) {
             $shortDumpInfo .= "Called IN FILE \n{$trace[1]['file']}" . PHP_EOL;
-            $shortDumpInfo .= "ON LINE: " . $trace[1]['line'] . " IN FILE: " . PHP_EOL . PHP_EOL;
+            $shortDumpInfo .= "ON LINE: <mark>" . $trace[1]['line'] . "</mark> IN FILE: " . PHP_EOL . PHP_EOL;
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 7);
         }
+
         if (isset($trace[2])) {
-            $shortDumpInfo .= isset($trace[2]['class']) ? "Class: " . $trace[2]['class'] : 'File: ' . $trace[2]['file'];
-            $shortDumpInfo .= isset($trace[2]['type']) ?? $trace[2]['type'] . $trace[2]['function'] . PHP_EOL;
-            $shortDumpInfo .= isset($trace[2]['function']) ?? $trace[2]['function'] . PHP_EOL;
+            $shortDumpInfo .= isset($trace[2]['class']) ? "<b>Class:</b>\n" . $trace[2]['class'] : 'File: ' . $trace[2]['file'] . '</i>';
+            $shortDumpInfo .= isset($trace[2]['type']) ? $trace[2]['type'] . "\n" : '';
+            // TODO print available arguments
+            $shortDumpInfo .=  $trace[2]['function'] ? $trace[2]['function'] . '(...)' : '';
 
             if (isset($trace[2]['args']) && is_array(isset($trace[2]['args']))) {
                 $shortDumpInfo .= 'Args: ' . implode(' | ', $trace[2]['args']) . '<hr>';

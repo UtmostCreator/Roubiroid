@@ -9,15 +9,17 @@ $form = Form::begin($logInAction, 'post', [
     'class' => 'custom-class'
 ]); ?>
     <input type="hidden" name="csrf" value="{{ csrf() }}" />
-    <h1>Please Login</h1>
+    <h1>Вхід до системи</h1>
 <?= $form->input($model, 'email', [
     'type' => 'email',
     'class' => 'custom-class',
-    'required' => true,
-    'note' => 'Use your email to login',
+    'placeholder' => 'Електронна Адреса',
+    'note' => 'Використовуйте свій email для входу',
+
 ])->label(); ?>
 <?= $form->input($model, 'password', [
     'class' => 'custom-class',
+    'placeholder' => 'Пароль',
 ])->passwordField(true)->label(); ?>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary">Вхід</button>
 <?= Form::end(); ?>

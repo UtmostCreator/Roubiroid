@@ -2,7 +2,7 @@
 
 use Framework\Application;
 use Framework\View\form\Form;
-use Framework\PointTo;
+use Framework\Paths;
 
 ?>
 <!doctype html>
@@ -74,7 +74,7 @@ use Framework\PointTo;
 </nav>
 
 <div class="container">
-    <?php require_once PointTo::views('notification/notification.php'); ?>
+    <?php require_once Paths::views('notification/notification.php'); ?>
     {{ content }}
 </div>
 

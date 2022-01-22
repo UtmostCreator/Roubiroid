@@ -3,11 +3,15 @@
 use Framework\View\form\Form;
 use models\User;
 
+/** @var string $logInAction */
+
 //\Modules\DD\DD::dd($_SERVER); //phpinfo()
 /** @var User $model */
-
-$form = Form::begin('', 'post', ['enctype' => Form::ENCTYPE_DEFAULT, 'class' => 'custom-class']); ?>
+?>
 @extends('layouts/auth')
+<?php
+$form = Form::begin('', 'post', ['enctype' => Form::ENCTYPE_DEFAULT, 'class' => 'custom-class']); ?>
+{{--<input type="hidden" name="csrf" value="{{ $csrf }}" />--}}
 
 <h1>Create an account</h1>
 <div class="row">

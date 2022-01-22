@@ -7,7 +7,8 @@ $this->extends('layouts/products');
 ?>
 
 <h1>Product</h1>
+<p><?= $product->name;?></p>
 <?php
-echo $product;
+
+echo $product->description;
 echo $this->escape('TESTS');
-echo $this->escape($scary);

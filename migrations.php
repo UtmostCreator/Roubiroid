@@ -83,7 +83,7 @@ $config = $config = [
         'folder' => 'views'
     ],
 ];
-Application::create(__DIR__, $config);
+Application::create($config);
 $app = Application::getInstance();
 
 if (in_array('-up', $argv)) {
