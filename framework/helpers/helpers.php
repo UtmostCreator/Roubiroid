@@ -3,36 +3,38 @@
 use Framework\Application;
 use Framework\authentication\AuthManager;
 use Framework\authentication\InterfaceAuthBase;
-use Framework\View\Engine\AdvancedEngine;
-use Framework\View\Engine\BaseEngine;
-use Framework\View\Engine\PhpEngine;
-use Framework\View\Manager;
+use Framework\Model;
+use Framework\Paths;
+use Framework\View\View;
 use Modules\DD;
-
 
 /* ==================================== BASE functions ==================================== */
 if (!function_exists('app')) {
-    /**
-     * Get app instance.
-     * @return mixed|Application
-     */
-    function app(): Application
+    function app(string $alias = null)
     {
-        return Application::app();
+        if (is_null($alias)) {
+            return Application::getInstance();
+        }
+
+        return Application::getInstance()->resolve($alias);
     }
 }
-
-//defined('BASE_PATH') || define('BASE_PATH', app()->basePath());
-if (!function_exists('base_path')) {
+//defined('basePath') || define('basePath', app()->basePath());
+if (!function_exists('basePath')) {
     /**
      * Get the path root path.
-     *
-     * @param string $path
+     * TODO maybe rename to basePath()
+     * @param string|null $newBasePath
+     * @param bool $console
      * @return string
      */
-    function base_path($path = ''): string
+    function basePath(string $newBasePath = null, bool $console = false): string
     {
-        return app()->basePath($path);
+//        if (!$console) {
+//            return app('paths.base');
+//        }
+
+        return Paths::getBase();
     }
 }
 
@@ -42,15 +44,9 @@ if (!function_exists('abort')) {
      */
     function abort(int $statusCode, string $errMessage = ''): void
     {
-//        \Modules\DD\DD::dd($errMessage);
         try {
-//        \Modules\DD\DD::dd(app()->router::getRoutes()['get']);
-
-//            \Modules\DD\DD::dd(app()->router::getRoutes());
             $abortMethod = app()->router::getRoutes()[$statusCode];
-//        \Modules\DD\DD::dd($abortMethod);
             if (isset($abortMethod) && $abortMethod instanceof \Closure) {
-//                echo $errMessage;
                 $abortMethod();
             }
         } catch (Exception $e) {
@@ -97,16 +93,16 @@ if (!function_exists('redirect')) {
     }
 }
 
-if (!function_exists('dd')) {
-    /**
-     * Get app instance.
-     * @param mixed $args
-     */
-    function dd($args)
-    {
-        DD::dd($args); // AuthManager
-    }
-}
+//if (!function_exists('dd')) {
+//    /**
+//     * Get app instance.
+//     * @param mixed $args
+//     */
+//    function dd(...$args)
+//    {
+//        DD::dd($args); // AuthManager
+//    }
+//}
 
 /* ==================================== AUTHENTICATION - login + password ==================================== */
 if (!function_exists('isAuth')) {
@@ -132,14 +128,15 @@ if (!function_exists('isGuest')) {
 }
 /* ==================================== AUTHENTICATION - login + password ==================================== */
 if (!function_exists('csrf')) {
-    /**
-     * @throws Exception
-     */
     function csrf(): string
     {
+//        DD::dd($_SERVER['REQUEST_METHOD']);
+//        DD::dl('csrf');
         // bin2hex - Convert binary data into hexadecimal representation
         // random_bytes - Generates cryptographically secure pseudo-random bytes
-        $_SESSION['token'] = bin2hex(random_bytes(32));
+        if (!isset($_SESSION['token'])) {
+            $_SESSION['token'] = bin2hex(random_bytes(32));
+        }
         return $_SESSION['token'];
     }
 }
@@ -151,12 +148,15 @@ if (!function_exists('secure')) {
      */
     function secure(): void
     {
+//        DD::dl('secure');
         // hash_equals - Timing attack safe string comparison
         if (!isset($_POST['csrf']) || !isset($_SESSION['token']) || !hash_equals($_SESSION['token'], $_POST['csrf'])) {
+            DD::dd('s exit');
             throw new Exception('CSRF token mismatch');
         }
     }
 }
+
 if (!function_exists('isDev')) {
     function isDev(): bool
     {
@@ -168,38 +168,46 @@ if (!function_exists('isDev')) {
     }
 }
 
-/* ==================================== ADDITIONAL ==================================== */
-
-/* ==================================== ADDITIONAL => VIE HELPERS ==================================== */
-if (!function_exists('view')) {
-    function view(string $template, array $data = []): string
+if (!function_exists('isProd')) {
+    function isProd(): bool
     {
-        /* @var Manager $manager */
-        static $manager;
-
-        if (!$manager) {
-            $manager = new Manager();
-
-            // let's add a pth for our views' folder
-            // so the manager knows where to look for a view
-            $manager->addPath(base_path() . '/resources/views');
-            // we'll also start adding new engine classes
-            // with their expected extensions to be able to pick
-            // the appropriate engine for the template
-            // TODO add priority to engines
-            $manager->addEngine('advanced.php', new AdvancedEngine());
-            $manager->addEngine('basic.php', new BaseEngine());
-
-            // must be registered last, because the first extension match is returned
-            $manager->addEngine('php', new PhpEngine());
-
-//            $manager->addMacro('escape', [MacrosHelper::class, 'escape']);
-            $manager->addMacro('escape', fn($value) => htmlspecialchars($value));
-            // ... splat operator TODO add comments here
-            $manager->addMacro('includes', fn(...$params) => print view(...$params));
+        if (isset($_ENV['APP_ENV']) && in_array($_ENV['APP_ENV'], ['prod', 'REMOTE'])) {
+            return true;
         }
 
-//        return $manager->render($template, $data);
-        return $manager->resolve($template, $data);
+        return false;
+    }
+}
+
+/* ==================================== ADDITIONAL ==================================== */
+
+/* ==================================== ADDITIONAL => VIEW HELPERS ==================================== */
+if (!function_exists('view')) {
+    function view(string $template, array $data = [])
+    {
+//        \Modules\DD::dd(app());
+        return app('view')->render($template, $data);
+    }
+}
+
+if (!function_exists('validate')) {
+    function validate(Model $model, array $attributes, $validator, array $params = [])
+    {
+        return app('validator')->validate($model, $attributes, $validator, $params);
+    }
+}
+
+//if (!function_exists('validate')) {
+//    function validate(array $data, array $rules, string $sessionName = 'errors')
+//    {
+//        return app('validator')->validate($data, $rules, $sessionName);
+//    }
+//}
+
+
+if (!function_exists('teste')) {
+    function teste(\Framework\Model $model)
+    {
+        $model->addError('firstname', 'error msg');
     }
 }

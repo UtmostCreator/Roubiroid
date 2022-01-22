@@ -21,6 +21,13 @@ class StringHelper
         return str_replace(array('\\', '%', '_'), array('\\\\', '\\%', '\\_'), $value);
     }
 
+    /** Depending on the 3rd argument extracts the string value before or after the specified value
+     *
+     * @param string $inValue
+     * @param string $findVal
+     * @param bool $before
+     * @return false|string
+     */
     public static function extractString(string $inValue, string $findVal, bool $before = true)
     {
         if (!$before) {
@@ -29,6 +36,12 @@ class StringHelper
         return substr($inValue, 0, strpos($inValue, $findVal));
     }
 
+    /** Checks whether the string ends with the specified string value
+     *
+     * @param $haystack
+     * @param $needle
+     * @return false|string
+     */
     public static function endsWith($haystack, $needle): bool
     {
         $length = strlen($needle);
@@ -37,4 +50,13 @@ class StringHelper
         }
         return substr($haystack, -$length) === $needle;
     }
-}
+
+
+
+    public static function normalizeSlashes($path)
+    {
+        if (strlen($path) < 2) {
+            return false;
+        }
+        return rtrim($path, '/') . '/';
+    }}
