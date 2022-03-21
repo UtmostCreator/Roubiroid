@@ -1,16 +1,23 @@
 <?php
 
 use Framework\db\Connection\Connection;
+use Framework\db\Migration\AMigration;
 
-class CreateUsersTable
+class CreateUsersTable extends AMigration
 {
-    public function migrate(Connection $connection)
+    public static ?string $tableName = 'users';
+
+    public function up(Connection $connection)
     {
-        $table = $connection->createTable('users');
+        $table = $connection->createTable(self::$tableName);
         $table->id('id');
         $table->string('name');
         $table->string('email');
         $table->string('password');
         $table->execute();
     }
-}
+
+    public function down(Connection $connection)
+    {
+        $connection->dropTable(self::$tableName);
+    }}

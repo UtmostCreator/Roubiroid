@@ -2,8 +2,11 @@
 
 namespace Framework\View\Engine;
 
+use Exception;
+use Framework\exceptions\CustomException;
 use Framework\helpers\FileHelper;
 use Framework\View\View;
+use InvalidArgumentException;
 use Modules\DD;
 
 /* @description is to add the following functions:
@@ -19,28 +22,40 @@ class AdvancedEngine implements EngineInterface
     protected array $layouts = [];
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function render(View $view): string
     {
+        $isEmptyFile = false;
         $hash = md5($view->path);
         $hashedFileName = "{$hash}.php";
         $folder = basePath() . '/storage/framework/views';
         if (FileHelper::canADirectoryBeCreated($folder)) {
             FileHelper::createDir($folder);
         }
-
         $hashedFileLocation = "{$folder}/{$hashedFileName}";
-        if (!is_file($hashedFileLocation)) {
-            touch($hashedFileLocation);
+        if (FileHelper::isDirectoryExist($hashedFileLocation)) {
+            try {
+                throw new CustomException("Impossible to create file, there is already such folder: " . $view->path);
+            } catch (CustomException $exception) {
+                echo $exception->getErrorMsg();
+                exit;
+            }
+        } elseif (!is_file($hashedFileLocation)) {
+            $isEmptyFile = touch($hashedFileLocation);
+        } else {
+            $isEmptyFile = filesize($hashedFileLocation) === 0;
         }
 
         $cached = realpath($hashedFileLocation);
 
-        $fileNotExistOrItIsOutdated = !file_exists($hashedFileLocation) || filemtime($view->path) > filemtime($hashedFileLocation);
-        if ($fileNotExistOrItIsOutdated) {
+        $isOutdated = filemtime($view->path) > filemtime($hashedFileLocation) || $isEmptyFile;
+//        DD::dd($view->path);
+        if ($isOutdated) {
             $content = $this->compile(file_get_contents($view->path));
-            $content = "<!--$view->path-->\n" . $content;
+            if (!isDev()) {
+                $content = "<!--$view->path-->\n" . $content;
+            }
             file_put_contents($cached, $content);
         }
 
@@ -58,7 +73,6 @@ class AdvancedEngine implements EngineInterface
 
             return $contentsWithLayout;
         }
-
         return $contents;
     }
 
@@ -151,7 +165,7 @@ class AdvancedEngine implements EngineInterface
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     protected function include(string $template, $data = []): void
     {

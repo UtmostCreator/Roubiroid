@@ -160,7 +160,7 @@ if (!function_exists('secure')) {
 if (!function_exists('isDev')) {
     function isDev(): bool
     {
-        if (isset($_ENV['APP_ENV']) && in_array($_ENV['APP_ENV'], ['dev', 'LOCAL'])) {
+        if (isset($_ENV['APP_ENV']) && in_array(strtolower($_ENV['APP_ENV']), ['dev', 'local'])) {
             return true;
         }
 
@@ -183,7 +183,7 @@ if (!function_exists('isProd')) {
 
 /* ==================================== ADDITIONAL => VIEW HELPERS ==================================== */
 if (!function_exists('view')) {
-    function view(string $template, array $data = [])
+    function view(string $template, array $data = []): string
     {
 //        \Modules\DD::dd(app());
         return app('view')->render($template, $data);

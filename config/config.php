@@ -30,14 +30,16 @@ return $config = [
     |
     */
     'migrations' => [
-        'folder' => 'database/migrations/',
+        // DIRECTORY_SEPARATOR must always end the string
+        'folder' => join(DIRECTORY_SEPARATOR, ['database', 'migrations']) . DIRECTORY_SEPARATOR,
         'table' => 'migrations',
         'old_folder' => 'migrations',
         'old_table' => 'migrations'
     ],
     // TODO maybe move to migrations?
     'seeders' => [
-        'folder' => 'database/seeders/',
+        // DIRECTORY_SEPARATOR must always end the string
+        'folder' => join(DIRECTORY_SEPARATOR, ['database', 'seeders']) . DIRECTORY_SEPARATOR,
         'table' => 'seeders',
     ],
     'userClass' => \models\User::class,

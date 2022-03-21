@@ -44,6 +44,9 @@ class MysqlConnection extends Connection
             $this->pdo = new PDO($dsn, $username, $password);
             if (isDev()) {
                 $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                /* Internally, if you use PDO::ATTR_EMULATE_PREPARES, PDO makes a copy of the SQL query
+                and interpolates parameter values into it before doing the prepare and execute.
+                But PDO does not expose this modified SQL query. */
                 $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
             }
         } catch (\PDOException $e) {
@@ -93,7 +96,7 @@ class MysqlConnection extends Connection
         return in_array($name, $tables);
     }
 
-    public function dropTables(): int
+    public function dropTables(): array
     {
         // generate an array of "DROP TABLE IF EXISTS `users`" rows
         $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
@@ -124,16 +127,59 @@ class MysqlConnection extends Connection
 //        return $statement->execute();
         $totalTableCount = count($clauses);
         $droppedTableCount = 0;
+        $droppedList = [];
         foreach ($clauses as $key => $tableToDrop) {
             $statement = $this->pdo->prepare($tableToDrop);
             if ($statement->execute()) {
                 preg_match('/`([^"]+)`/', $tableToDrop, $m);
-                echo sprintf("Table with name: %s dropped successfully", $m[0]) . PHP_EOL;
+                $droppedList[] = sprintf("\t%s dropped successfully", $m[0]) . PHP_EOL;
 //                exit;
                 $droppedTableCount++;
             }
         }
 
-        return $totalTableCount === $droppedTableCount;
+        return [
+            'allDropped' => $totalTableCount === $droppedTableCount,
+            'toBeDroppedCount' => $totalTableCount,
+            'droppedTablesCount' => $droppedTableCount,
+            'completePercentage' => ($totalTableCount / $droppedTableCount) * 100,
+            'droppedList' => $droppedList,
+        ];
     }
+
+    public function dropTable(string $name): bool
+    {
+        $statement = $this->pdo->prepare("DROP TABLE IF EXISTS `{$name}`");
+        return $statement->execute();
+    }
+
+    public function hasTableOnly(string $name): bool
+    {
+        $statement = $this->pdo->prepare("SELECT exists(SELECT * 
+            FROM information_schema.tables
+            WHERE table_schema = '{$this->database}' 
+                AND table_name = '{$name}'
+            LIMIT 1) as output
+        ");
+        return $statement->execute();
+    }
+
+    public function isTableEmpty(string $name): bool
+    {
+        $statement = $this->pdo->prepare("SELECT (exists(select 1 from {$name})) as output");
+        $statement->execute();
+        $result = $statement->fetch(PDO::FETCH_ASSOC);
+        return $result['output'] === 0;
+    }
+
+    public function truncate(string $name)
+    {
+        // TRUNCATE TABLE `tableName`
+    }
+
+//    public function truncateTable(string $name): bool
+//    {
+//        $statement = $this->pdo->prepare("TRUNCATE `rz_framework`.`migrations`");
+//        return $statement->execute();
+//    }
 }

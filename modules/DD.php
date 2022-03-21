@@ -26,6 +26,18 @@ class DD
     private static float $endTime = 0.0;
     private static float $total = 0.0;
     private static $TEXT = '';
+    private static bool $addStyles = true;
+
+    public static function toggleStyles()
+    {
+        self::$addStyles = !self::$addStyles;
+    }
+
+
+    public static function disableStyles()
+    {
+        self::$addStyles = false;
+    }
 
     public static function dd($data, $shotHTML = false, $exit = true)
     {
@@ -33,7 +45,9 @@ class DD
             echo 'Debug is not allowed here!';
             exit;
         }
-        echo DD::getStyles();
+        if (static::$addStyles) {
+            echo DD::getStyles();
+        }
         echo "<br><div class='wrapper'>";
         echo DD::dumpFileInfo();
         echo "<div class='centered-content'><pre class='colored wrap-any-text'>";

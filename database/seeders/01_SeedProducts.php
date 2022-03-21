@@ -5,7 +5,7 @@ use Framework\db\Connection\Connection;
 class SeedProducts
 {
 
-    public function migrate(Connection $connection)
+    public function up(Connection $connection)
     {
         $products = [
             [

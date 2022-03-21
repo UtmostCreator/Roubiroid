@@ -39,11 +39,21 @@ abstract class Connection
     abstract public function hasTable(string $name): bool;
 
     /**
+     * Find out if a table exists on this connection
+     */
+    abstract public function dropTable(string $name): bool;
+
+    /**
+     * Find out if a table exists on this connection
+     */
+    abstract public function isTableEmpty(string $name): bool;
+
+    /**
      * Drop all tables in the current database
-     * the caveat: iit will only drop tables if the file path is not :memory:.
+     * the caveat: it will only drop tables if the file path is not :memory:.
      * It is possible to have an in-memory SQLite database
      */
-    abstract public function dropTables(): int;
+    abstract public function dropTables(): array;
 
 
     protected static $inst = null;

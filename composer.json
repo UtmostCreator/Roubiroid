@@ -20,13 +20,13 @@
   "require": {
     "ext-pdo": "*",
     "ext-mbstring": "*",
-    "vlucas/phpdotenv": "^5.4",
-    "filp/whoops": "^2.14.4",
-    "symfony/console": "^5.3.10"
+    "vlucas/phpdotenv": "^5.4.1",
+    "filp/whoops": "^2.14.5",
+    "symfony/console": "^5.4.3"
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "3.*",
-    "symfony/var-dumper": "^5.3"
+    "symfony/var-dumper": "^5.4.3"
   },
   "config": {
     "_comment": "Unless we set the config.process-timeout property, our Composer scripts\nwill terminate after 300 seconds. A longer timeout, or no timeout at all, benefits us\nbecause our development server will continue running as long as we need it to run.\nEverything we run, using composer run x, must obey this timeout.",

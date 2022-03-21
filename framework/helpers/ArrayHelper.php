@@ -115,6 +115,22 @@ class ArrayHelper
         return array_combine(array_column($array, $lookedID), array_column($array, $lookedName));
     }
 
+    /** Prepares the array for select options from the given id name and value
+     *
+     * @param array $array
+     * @param string $lookedID
+     * @param string $lookedName
+     * @return array
+     */
+    public static function map(array $array, string $lookedID = 'id', string $lookedName = 'name'): array
+    {
+        if (empty($array) || strlen($lookedID) === 0 || strlen($lookedName) === 0) {
+            return [];
+        }
+
+        return array_combine(array_column($array, $lookedID), array_column($array, $lookedName));
+    }
+
     /** Returns the full difference between 2 arrays by value
      *
      * @param array $arr1

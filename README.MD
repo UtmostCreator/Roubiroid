@@ -37,9 +37,31 @@ composer install
 composer update
 ```
 
-### Migrations
+## Update autoloads
 ```
-php migrations.php
+composer dump-autoload
+```
+
+## Migrations
+
+### Do migrations from scratch
+```
+php command.php migrate --up
+```
+
+### Delete all migrations
+```
+php command.php migrate --down
+```
+
+### Delete all migrations, and run then from scratch - DEFAULT
+```
+php command.php migrate --fresh
+```
+
+### Delete all migrations, and run then from scratch - DEFAULT
+```
+php command.php migrate --list
 ```
 
 ### Compiles and minifies for production

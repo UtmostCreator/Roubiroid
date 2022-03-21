@@ -59,9 +59,9 @@ abstract class QueryBuilder
 
         // TODO add query logger class (to show later all requests)
         try {
-        return $this->connection->pdo()->prepare($query);
+            return $this->connection->pdo()->prepare($query);
         } catch (\Throwable $e) {
-            throw new \PDOException(sprintf('ERROR: %s; in query: %s', $e->getMessage(), $query));
+            throw new \PDOException(sprintf("ERROR: %s; in query: %s", $e->getMessage(), $query));
         }
     }
 
@@ -119,9 +119,9 @@ abstract class QueryBuilder
     public function where(string $column, $comparator, $value = null): self
     {
         if (is_null($value) && !is_null($comparator)) {
-            array_push($this->wheres, [$column, '=', $comparator]);
+            $this->wheres[] = [$column, '=', $comparator];
         } else {
-            array_push($this->wheres, [$column, $comparator, $value]);
+            $this->wheres[] = [$column, $comparator, $value];
         }
 
         return $this;
@@ -193,7 +193,7 @@ abstract class QueryBuilder
         $statement = $this->take(1)->orderBy('id DESC')->prepare();
         $statement->execute();
 
-        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+        return $statement->fetch(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -201,7 +201,7 @@ abstract class QueryBuilder
      * and return the number of affected rows
      */
     // TODO add default validation
-    public function insert(array $columns, array $values)
+    public function insert(array $columns, array $values) // : int
     {
         $this->type = self::TYPE_INSERT;
         $this->columns = $columns;
@@ -209,6 +209,7 @@ abstract class QueryBuilder
 
         $statement = $this->prepare();
         $statement->execute($values);
+        return $statement->rowCount();
     }
 
     // TODO add default validation
@@ -367,6 +368,41 @@ abstract class QueryBuilder
         }
 
         return $query;
+    }
+
+    public function isRecordExist(string $inTable, array $columns, array $values): bool
+    {
+        $this->type = self::TYPE_SELECT;
+        $this->columns = $columns;
+
+        $this->select('1');
+        $this->from($inTable);
+        $this->whereArr($columns, $values);
+        $this->limit = 1;
+
+        $statement = $this->prepare();
+
+        $statement->execute($this->getWhereValues());
+
+//        $result = $statement->fetch(\PDO::FETCH_ASSOC);
+//        DD::dd($statement->fetchColumn());
+        return $statement->fetchColumn();
+    }
+
+
+    public function hasColumn(string $table, string $name)
+    {
+        $query = sprintf("SHOW COLUMNS FROM `%s` WHERE Field = '%s'", $table, $name);
+        $statement = $this->executeQuery($query);
+        $statement->execute();
+        return $statement->fetchColumn();
+    }
+
+    private function whereArr($columns, $values, $comparator = '=')
+    {
+        for ($i = 0; $i < count($columns); $i++) {
+            $this->where($columns[$i], $comparator, $values[$i]);
+        }
     }
 
 }

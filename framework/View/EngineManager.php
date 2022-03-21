@@ -18,7 +18,7 @@ class EngineManager
         if (!is_dir($path)) {
             throw  new \InvalidArgumentException(sprintf('Invalid path to folder %s; or folder does not exist', $path));
         }
-        array_push($this->paths, $path);
+        $this->paths[] = $path;
         return $this;
     }
 
