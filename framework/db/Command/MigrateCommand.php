@@ -80,6 +80,12 @@ class MigrateCommand extends Command
                 'Creates Migration table in case it does not exist, and executes all migrations'
             )
             ->addOption(
+                'select-migration',
+                's',
+                InputOption::VALUE_NONE,
+                'Allows you so select migrations like "1,2,3" or "3-7"'
+            )
+            ->addOption(
                 'down',
                 'd',
                 InputOption::VALUE_NONE,
@@ -87,7 +93,7 @@ class MigrateCommand extends Command
             )
             ->addOption(
                 'drop-migration-table',
-                'dt',
+                'r',
                 InputOption::VALUE_NONE,
                 "Drops the main table <{$migrationTableName}>"
             )
@@ -99,19 +105,19 @@ class MigrateCommand extends Command
             )
             ->addOption(
                 'list-all',
-                'la',
+                'a',
                 InputOption::VALUE_NONE,
                 'Shows executed and not executed migrations'
             )
             ->addOption(
                 'list-executed',
-                'le',
+                'e',
                 InputOption::VALUE_NONE,
                 'Shows executed migrations'
             )
             ->addOption(
                 'list-new',
-                'ln',
+                'N',
                 InputOption::VALUE_NONE,
                 'Shows newly added migrations'
             )
@@ -186,7 +192,7 @@ class MigrateCommand extends Command
             $this->listExecuted($output);
             return Command::SUCCESS;
         } elseif ($input->getOption('list-all')) {
-            $output->writeln('<info>Full Migration List:</info>');
+            $output->writeln('<info>Executed Migration List</info>');
             $this->listExecuted($output);
             $output->writeln('<info>Not Executed Migration List:</info>');
             $this->listNotExecuted($output);
